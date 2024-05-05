@@ -1,0 +1,9 @@
+.env
+.history
+.idea
+app/__pycache__
+app/model/__pycache__
+app/service/__pycache__
+app/service/test/__pycache__
+.conda
+app/utils/__pycache__
