@@ -1,7 +1,7 @@
 import datetime
 from unittest import TestCase
 
-from app.model.receipts_alchemy import Receipt
+from app.model.db.receipts_alchemy import Receipt
 from app.service.process_receipts import AzureFormRecognizer
 
 

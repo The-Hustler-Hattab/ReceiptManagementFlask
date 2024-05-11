@@ -4,7 +4,7 @@ from azure.storage.blob import BlobServiceClient, ContainerClient, StorageStream
 from flask import jsonify, Response
 
 from app import app, Constants
-from app.model.receipts_alchemy import Receipts
+from app.model.db.receipts_alchemy import Receipts
 
 
 class AzureBlobStorage:

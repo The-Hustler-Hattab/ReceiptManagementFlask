@@ -25,7 +25,7 @@ class DataChartModel:
         }
 
 
-class AnalyticsChart:
+class BarChart:
     """
     Represents data for analytics chart.
 
@@ -76,7 +76,7 @@ class AnalyticsChart:
             f'total_amount_subtotal_month: {self.total_amount_subtotal_month}, total_tax: {self.total_tax}, total_tax_month: {self.total_tax_month}')
 
     @staticmethod
-    def get_labels(chart_models: List['AnalyticsChart'], field_name: str) -> List[str]:
+    def get_labels(chart_models: List['BarChart'], field_name: str) -> List[str]:
         """
           Retrieves labels for the given field name from a list of AnalyticsChart objects.
 
@@ -98,7 +98,7 @@ class AnalyticsChart:
         return labels_list
 
     @staticmethod
-    def get_data_all(chart_models: List['AnalyticsChart']) -> Dict[str, Dict]:
+    def get_data_all(chart_models: List['BarChart']) -> Dict[str, Dict]:
         """
         Retrieves all data for the given list of AnalyticsChart objects.
 
@@ -109,20 +109,20 @@ class AnalyticsChart:
             Dict[str, Dict]: A dictionary containing data for different fields.
         """
         data_chart_model_dict: Dict[str, Dict] = {}
-        data_chart_model_dict['total_amount'] = {  "data": AnalyticsChart.get_data(chart_models, 'total_amount'),
-                                                   "label": AnalyticsChart.get_labels(chart_models, 'total_amount_month')}
+        data_chart_model_dict['total_amount'] = {  "data": BarChart.get_data(chart_models, 'total_amount'),
+                                                   "label": BarChart.get_labels(chart_models, 'total_amount_month')}
 
-        data_chart_model_dict['total_amount_subtotal'] = {  "data": AnalyticsChart.get_data(chart_models, 'total_amount_subtotal'),
-                                                   "label": AnalyticsChart.get_labels(chart_models, 'total_amount_subtotal_month')}
+        data_chart_model_dict['total_amount_subtotal'] = {  "data": BarChart.get_data(chart_models, 'total_amount_subtotal'),
+                                                   "label": BarChart.get_labels(chart_models, 'total_amount_subtotal_month')}
 
-        data_chart_model_dict['total_tax'] = {  "data": AnalyticsChart.get_data(chart_models, 'total_tax'),
-                                                   "label": AnalyticsChart.get_labels(chart_models, 'total_tax_month')}
+        data_chart_model_dict['total_tax'] = {  "data": BarChart.get_data(chart_models, 'total_tax'),
+                                                   "label": BarChart.get_labels(chart_models, 'total_tax_month')}
 
 
         return data_chart_model_dict
 
     @staticmethod
-    def get_data(chart_models: List['AnalyticsChart'], field_name: str) -> List[dict]:
+    def get_data(chart_models: List['BarChart'], field_name: str) -> List[dict]:
         """
          Retrieves data for the given field name from a list of AnalyticsChart objects.
 
@@ -134,14 +134,14 @@ class AnalyticsChart:
              List[dict]: A list of data.
          """
         data_chart_models = []
-        vendors: list[str] = AnalyticsChart.get_list_of_vendors_ordered_non_duplicate(chart_models)
+        vendors: list[str] = BarChart.get_list_of_vendors_ordered_non_duplicate(chart_models)
         for vendor in vendors:
-            data_chart_models.append(AnalyticsChart.get_data_for_vendor(vendor, chart_models, field_name))
+            data_chart_models.append(BarChart.get_data_for_vendor(vendor, chart_models, field_name))
 
         return data_chart_models
 
     @staticmethod
-    def get_data_for_vendor(vendor: str, chart_models: List['AnalyticsChart'], field_name: str) -> dict:
+    def get_data_for_vendor(vendor: str, chart_models: List['BarChart'], field_name: str) -> dict:
         """
         Retrieves data for a specific vendor and field name from a list of AnalyticsChart objects.
 
@@ -162,7 +162,7 @@ class AnalyticsChart:
         return data_chart_models.to_dict()
 
     @staticmethod
-    def get_list_of_vendors_ordered_non_duplicate(chart_models: list['AnalyticsChart']) -> list:
+    def get_list_of_vendors_ordered_non_duplicate(chart_models: list['BarChart']) -> list:
         """
                Retrieves a list of vendors ordered non-duplicated from a list of AnalyticsChart objects.
 
@@ -181,7 +181,7 @@ class AnalyticsChart:
         return months
 
     @staticmethod
-    def filter_non_zero_total_amount(chart_models: List['AnalyticsChart']) -> List['AnalyticsChart']:
+    def filter_non_zero_total_amount(chart_models: List['BarChart']) -> List['BarChart']:
         """
         Filters out AnalyticsChart objects with zero total amount.
 

@@ -24,10 +24,21 @@ class DataManipulation:
         elif vendor.upper() == "LOWES":
             return "--blue-900"
         else:
-            return "rgba(75, 192, 192, 0.2)"
+            return "--red-500"
 
     @staticmethod
-    def map_to_month(month_numbers: list[int]) -> list[str]:
+    def get_hover_color(vendor: str) -> str:
+        if vendor.upper() == "WALMART":
+            return "--blue-300"
+        elif vendor.upper() == "HOME DEPOT":
+            return "--yellow-400"
+        elif vendor.upper() == "LOWES":
+            return "--blue-800"
+        else:
+            return "--red-400"
+
+    @staticmethod
+    def map_to_month(month_numbers: int) -> str:
         month_mapping = {
             1: "January",
             2: "February",
@@ -42,4 +53,4 @@ class DataManipulation:
             11: "November",
             12: "December"
         }
-        return [month_mapping[num] for num in month_numbers]
+        return month_mapping[month_numbers]

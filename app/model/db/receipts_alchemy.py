@@ -1,13 +1,16 @@
 from typing import List
 
 from flask import Response, jsonify
-from sqlalchemy import create_engine, Column, String, Date, Numeric, DateTime, Float, delete, text
+from sqlalchemy import create_engine, Column, String, Date, Numeric, DateTime, Float, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import date, datetime
 
 from app import app, Constants
-from app.model.analytics_chart import AnalyticsChart
+from app.model.charts.bar_chart import BarChart
+from app.model.charts.horizantal_chart import HorizontalChart
+from app.model.charts.line_chart import LineChart
+from app.model.charts.pie_chart import PieChart
 
 # Create a base class for our declarative models
 Base = declarative_base()
@@ -172,7 +175,7 @@ class Receipts(Base):
             return jsonify({'message': f'Failed to delete receipt(s) with file_path "{file_path}": {e}'}), 500
 
     @staticmethod
-    def fetch_between_chart_model_non_null_vendors(start_date: date, end_date: date) -> List[AnalyticsChart]:
+    def fetch_between_bar_chart_model_non_null_vendors(start_date: date, end_date: date) -> List[BarChart]:
         # Define your raw SQL query with parameters
         sql_query = text("""
     SELECT * FROM (SELECT 
@@ -250,7 +253,7 @@ ORDER BY
         # Create list of AnalyticsChart objects from the query results
         analytics_charts = []
         for row in results:
-            analytics_chart = AnalyticsChart(
+            analytics_chart = BarChart(
                 row[0],  # vendor
                 row[1],  # month
                 row[2],  # year
@@ -265,3 +268,115 @@ ORDER BY
 
         return analytics_charts
 
+    @staticmethod
+    def fetch_between_pie_chart_model(start_date: date, end_date: date) -> List[PieChart]:
+        # Define your raw SQL query with parameters
+        sql_query = text("""
+    SELECT 
+        vendor,
+        ROUND(SUM(total), 2) AS total_sum,
+        ROUND(SUM(sub_total), 2) AS sub_total_sum,
+        ROUND(SUM(tax), 2) AS tax_sum
+    from operations_receipts WHERE 
+    purchased_at BETWEEN :start_date AND :end_date
+    group by vendor;
+        """)
+
+        # Execute the query using SQLAlchemy's execute() method
+        with engine.connect() as conn:
+            results = conn.execute(sql_query, {'start_date': start_date, 'end_date': end_date}).fetchall()
+
+        # Create list of AnalyticsChart objects from the query results
+        analytics_charts = []
+        for row in results:
+            analytics_chart = PieChart(
+                row[0],  # vendor
+                float(row[1]),  # total_amount
+                float(row[2]),  # total_sub_total
+                float(row[3]),  # total_tax
+            )
+            analytics_charts.append(analytics_chart)
+
+        return analytics_charts
+
+
+    @staticmethod
+    def fetch_between_line_chart_model(start_date: date, end_date: date) -> List[LineChart]:
+        # Define your raw SQL query with parameters
+        sql_query = text("""
+SELECT 
+    YEAR(purchased_at) AS year,
+    MONTH(purchased_at) AS month,
+    ROUND(SUM(total), 2) AS total_cost,
+    ROUND(SUM(sub_total), 2) AS total_sub_total,
+    ROUND(SUM(tax), 2) AS total_tax,
+    (ROUND(SUM(total), 2) + 
+     LAG(ROUND(SUM(total), 2), 1, 0) OVER (ORDER BY YEAR(purchased_at), MONTH(purchased_at))) AS overall_total_cost,
+    (ROUND(SUM(sub_total), 2) + 
+     LAG(ROUND(SUM(sub_total), 2), 1, 0) OVER (ORDER BY YEAR(purchased_at), MONTH(purchased_at))) AS overall_total_sub_total,
+    (ROUND(SUM(tax), 2) + 
+     LAG(ROUND(SUM(tax), 2), 1, 0) OVER (ORDER BY YEAR(purchased_at), MONTH(purchased_at))) AS overall_total_tax
+FROM 
+    operations_receipts
+    
+    where purchased_at BETWEEN :start_date AND :end_date
+    
+GROUP BY 
+    YEAR(purchased_at), MONTH(purchased_at)
+ORDER BY 
+    YEAR(purchased_at), MONTH(purchased_at);
+        """)
+
+        # Execute the query using SQLAlchemy's execute() method
+        with engine.connect() as conn:
+            results = conn.execute(sql_query, {'start_date': start_date, 'end_date': end_date}).fetchall()
+
+        # Create list of AnalyticsChart objects from the query results
+        analytics_charts = []
+        for row in results:
+            analytics_chart = LineChart(
+                int(row[0]),  # year
+                int(row[1]),  # month
+                round(float(row[5]),2),  # over_all_total_cost
+                round(float(row[6]),2),  # over_all_total_sub_total
+                round(float(row[7]),2),  # over_all_total_tax
+            )
+            analytics_charts.append(analytics_chart)
+
+        return analytics_charts
+
+    @staticmethod
+    def fetch_between_horizontal_chart_model(start_date: date, end_date: date) -> List[HorizontalChart]:
+        # Define your raw SQL query with parameters
+        sql_query = text("""
+SELECT 
+    YEAR(purchased_at) AS year,
+    MONTH(purchased_at) AS month,
+    ROUND(SUM(total),2 )AS total_cost,
+    ROUND(SUM(sub_total),2) AS total_sub_total,
+    ROUND(SUM(tax),2) AS total_tax
+FROM 
+    operations_receipts where purchased_at BETWEEN :start_date AND :end_date
+GROUP BY 
+    YEAR(purchased_at), MONTH(purchased_at)
+ORDER BY 
+    YEAR(purchased_at), MONTH(purchased_at);
+        """)
+
+        # Execute the query using SQLAlchemy's execute() method
+        with engine.connect() as conn:
+            results = conn.execute(sql_query, {'start_date': start_date, 'end_date': end_date}).fetchall()
+
+        # Create list of AnalyticsChart objects from the query results
+        analytics_charts = []
+        for row in results:
+            analytics_chart = HorizontalChart(
+                int(row[0]),  # year
+                int(row[1]),  # month
+                round(float(row[2]), 2),  # total_cost
+                round(float(row[3]), 2),  # total_sub_total
+                round(float(row[4]), 2),  # total_tax
+            )
+            analytics_charts.append(analytics_chart)
+
+        return analytics_charts

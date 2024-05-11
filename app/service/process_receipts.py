@@ -4,7 +4,7 @@ from typing import IO, Dict, Tuple
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
 from app import app, Constants
-from app.model.receipts_alchemy import Receipt, Receipts
+from app.model.db.receipts_alchemy import Receipt, Receipts
 from app.service.azure_blob import AzureBlobStorage
 from app.util.data_manipulation import DataManipulation
 

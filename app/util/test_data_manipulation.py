@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-from app.model.analytics_chart import AnalyticsChart
 from app.util.data_manipulation import DataManipulation
 
 
