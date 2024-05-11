@@ -6,4 +6,4 @@ app/model/__pycache__
 app/service/__pycache__
 app/service/test/__pycache__
 .conda
-app/utils/__pycache__
+app/util/__pycache__

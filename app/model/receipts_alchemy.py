@@ -172,54 +172,96 @@ class Receipts(Base):
             return jsonify({'message': f'Failed to delete receipt(s) with file_path "{file_path}": {e}'}), 500
 
     @staticmethod
-    def run_query(start_date, end_date) -> List[AnalyticsChart]:
-        # Connect to your MySQL database using SQLAlchemy
-        engine = create_engine('your_database_connection_string')
-
+    def fetch_between_chart_model_non_null_vendors(start_date: date, end_date: date) -> List[AnalyticsChart]:
         # Define your raw SQL query with parameters
         sql_query = text("""
-            SELECT 
-                vendor, 
-                MONTH(purchased_at) AS month,
-                YEAR(purchased_at) AS year,
-                FORMAT(SUM(total), 2) AS total_amount,
-                (SELECT FORMAT(SUM(total), 2) FROM operations_receipts WHERE MONTH(purchased_at) = :month AND YEAR(purchased_at) = :year) AS total_amount_month,
-                FORMAT(SUM(sub_total), 2) AS total_sub_total,
-                (SELECT FORMAT(SUM(sub_total), 2) FROM operations_receipts WHERE MONTH(purchased_at) = :month AND YEAR(purchased_at) = :year) AS total_sub_amount_month,
-                FORMAT(SUM(tax), 2) AS total_tax,
-                (SELECT FORMAT(SUM(tax), 2) FROM operations_receipts WHERE MONTH(purchased_at) = :month AND YEAR(purchased_at) = :year) AS total_tax_month
-            FROM 
-                operations_receipts 
-            WHERE  
-                purchased_at BETWEEN :start_date AND :end_date
-            GROUP BY 
-                vendor, 
-                MONTH(purchased_at)
-            ORDER BY 
-                MONTH(purchased_at) ASC;
+    SELECT * FROM (SELECT 
+    vendors.vendor,
+    months.month,
+    years.year,
+    IFNULL(FORMAT(SUM(op.total), 2), '0.00') AS total_amount,
+        IFNULL((
+        SELECT 
+           FORMAT(SUM(total), 2) 
+        FROM 
+            operations_receipts 
+        WHERE 
+            MONTH(purchased_at) = month
+            AND YEAR(purchased_at) = year
+    ),0.00) AS total_amount_month,
+    IFNULL(FORMAT(SUM(op.sub_total), 2), '0.00') AS total_sub_total,
+    IFNULL( 
+            (
+        SELECT 
+            FORMAT(SUM(sub_total), 2) 
+        FROM 
+            operations_receipts 
+        WHERE 
+            MONTH(purchased_at) = month
+            AND YEAR(purchased_at) = year
+    ), '0.00') AS total_sub_amount_month,
+    IFNULL(FORMAT(SUM(op.tax), 2), '0.00') AS total_tax,
+    IFNULL((
+        SELECT 
+            FORMAT(SUM(tax), 2) 
+        FROM 
+            operations_receipts 
+        WHERE 
+            MONTH(purchased_at) = month
+            AND YEAR(purchased_at) = year
+    ), '0.00') AS total_tax_month,
+    ifNull(
+        DATE_FORMAT(IFNULL(op.purchased_at, CONCAT_WS('-', years.year, months.month, '01')), '%Y-%m-%d'),
+        'NULL'
+    ) as purchased_at  
+FROM 
+    (
+        SELECT DISTINCT vendor FROM operations_receipts
+    ) AS vendors
+CROSS JOIN 
+    (
+        SELECT 1 AS month UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL
+        SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12
+    ) AS months
+CROSS JOIN 
+    (
+        SELECT YEAR(purchased_at) AS year FROM operations_receipts where purchased_at   GROUP BY YEAR(purchased_at)
+    ) AS years
+LEFT JOIN 
+    operations_receipts op 
+    ON op.vendor = vendors.vendor 
+    AND MONTH(op.purchased_at) = months.month 
+    AND YEAR(op.purchased_at) = years.year 
+GROUP BY 
+    vendors.vendor, 
+    months.month, 
+    years.year
+ORDER BY 
+    years.year ASC, months.month ASC) AS data
+   
+    where data.purchased_at BETWEEN :start_date AND :end_date
+    ;
         """)
 
         # Execute the query using SQLAlchemy's execute() method
         with engine.connect() as conn:
-            results = conn.execute(sql_query, start_date=start_date, end_date=end_date, month=start_date.month,
-                                   year=start_date.year).fetchall()
+            results = conn.execute(sql_query, {'start_date': start_date, 'end_date': end_date}).fetchall()
 
         # Create list of AnalyticsChart objects from the query results
         analytics_charts = []
         for row in results:
             analytics_chart = AnalyticsChart(
-                row['vendor'],
-                row['month'],
-                row['year'],
-                float(row['total_amount']),
-                float(row['total_amount_month']),
-                float(row['total_sub_total']),
-                float(row['total_sub_amount_month']),
-                float(row['total_tax']),
-                float(row['total_tax_month'])
+                row[0],  # vendor
+                row[1],  # month
+                row[2],  # year
+                float(row[3]),  # total_amount
+                float(row[4]),  # total_amount_month
+                float(row[5]),  # total_sub_total
+                float(row[6]),  # total_sub_amount_month
+                float(row[7]),  # total_tax
+                float(row[8])  # total_tax_month
             )
             analytics_charts.append(analytics_chart)
 
         return analytics_charts
-
 
