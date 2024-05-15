@@ -26,8 +26,9 @@ def health() -> Tuple[Dict[str, str], int]:
             'msg': 'API is up'}, 200
 
 
-@verify_jwt
+
 @app.route('/get-list-of-receipts', methods=['GET'])
+@verify_jwt
 def get_list_of_receipts() -> Tuple[Dict[str, str], int]:
     """
     get list of receipts
@@ -42,8 +43,9 @@ def get_list_of_receipts() -> Tuple[Dict[str, str], int]:
             'msg': 'retrieved receipts successfully'}, 200
 
 
-@verify_jwt
+
 @app.route('/process-receipts/<company_name>/<customer_name>', methods=['POST'])
+@verify_jwt
 def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, str], int]:
     """
      Process PDF receipts Endpoint
@@ -91,8 +93,9 @@ def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, s
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
 
-@verify_jwt
+
 @app.route('/store-receipts-ai-assisted', methods=['POST'])
+@verify_jwt
 def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
     """
      Process PDF receipts with AI assistance Endpoint
@@ -196,8 +199,9 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
 
-@verify_jwt
+
 @app.route('/process-receipts-ai-assisted', methods=['POST'])
+@verify_jwt
 def process_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
     """
      process PDF receipts with ai assistance Endpoint
@@ -234,8 +238,9 @@ def process_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
 
-@verify_jwt
+
 @app.route('/delete-file-by-path', methods=['DELETE'])
+@verify_jwt
 def delete_file_by_file_path() -> tuple[Response, int]:
     """
     Delete a file from table by file_path
@@ -264,8 +269,9 @@ def delete_file_by_file_path() -> tuple[Response, int]:
     return Receipts.delete_by_file_path(file_path)
 
 
-@verify_jwt
+
 @app.route('/get-file')
+@verify_jwt
 def get_file():
     """
     Get file from Azure Blob Storage
@@ -305,8 +311,8 @@ def get_file():
         return "Path parameter is missing", 400
 
 
-@verify_jwt
 @app.route('/get-list-of-files', methods=['GET'])
+@verify_jwt
 def get_files():
     """
     Get list of files from Azure Blob Storage
@@ -326,8 +332,9 @@ def get_files():
         return jsonify({'error': str(e)}), 500
 
 
-@verify_jwt
+
 @app.route('/delete-file', methods=['DELETE'])
+@verify_jwt
 def delete_file() -> tuple[Response, int]:
     """
     Delete a file from Azure Blob Storage
@@ -407,8 +414,9 @@ def get_bar_chart_data():
         # return jsonify({'error': str(e)}), 500
 
 
-@verify_jwt
+
 @app.route('/get-pie-chart-data', methods=['GET'])
+@verify_jwt
 def get_pie_chart_data():
     """
     Get pie chart data
@@ -458,8 +466,9 @@ def get_pie_chart_data():
         # return jsonify({'error': str(e)}), 500
 
 
-@verify_jwt
+
 @app.route('/get-line-chart-data', methods=['GET'])
+@verify_jwt
 def get_line_chart_data():
     """
     Get line chart data
@@ -509,8 +518,9 @@ def get_line_chart_data():
         # return jsonify({'error': str(e)}), 500
 
 
-@verify_jwt
+
 @app.route('/get-horizontal-chart-data', methods=['GET'])
+@verify_jwt
 def get_horizontal_chart_data():
     """
     Get horizontal chart data
