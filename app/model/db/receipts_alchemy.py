@@ -306,9 +306,9 @@ ORDER BY
         for row in results:
             analytics_chart = PieChart(
                 row[0],  # vendor
-                float(row[1].replace(',', '')),  # total_amount
-                float(row[2].replace(',', '')),  # total_sub_total
-                float(row[3].replace(',', '')),  # total_tax
+                float(row[1]),  # total_amount
+                float(row[2]),  # total_sub_total
+                float(row[3]),  # total_tax
             )
             analytics_charts.append(analytics_chart)
 
@@ -351,9 +351,9 @@ ORDER BY
             analytics_chart = LineChart(
                 int(row[0]),  # year
                 int(row[1]),  # month
-                round(float(row[5].replace(',', '')), 2),  # over_all_total_cost
-                round(float(row[6].replace(',', '')), 2),  # over_all_total_sub_total
-                round(float(row[7].replace(',', '')), 2),  # over_all_total_tax
+                round(float(row[5]), 2),  # over_all_total_cost
+                round(float(row[6]), 2),  # over_all_total_sub_total
+                round(float(row[7]), 2),  # over_all_total_tax
             )
             analytics_charts.append(analytics_chart)
 
@@ -387,9 +387,9 @@ ORDER BY
             analytics_chart = HorizontalChart(
                 int(row[0]),  # year
                 int(row[1]),  # month
-                round(float(row[2].replace(',', '')), 2),  # total_cost
-                round(float(row[3].replace(',', '')), 2),  # total_sub_total
-                round(float(row[4].replace(',', '')), 2),  # total_tax
+                round(float(row[2]), 2),  # total_cost
+                round(float(row[3]), 2),  # total_sub_total
+                round(float(row[4]), 2),  # total_tax
             )
             analytics_charts.append(analytics_chart)
 

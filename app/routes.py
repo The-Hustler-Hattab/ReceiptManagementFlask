@@ -4,7 +4,7 @@ from typing import Tuple, Dict
 
 from flask import jsonify, Response, request, send_file
 
-from app import app, Constants
+from app import app, Constants, verify_jwt
 from app.model.db.receipts_alchemy import Receipts, Receipt
 from app.service.analytics import AnalyticsService
 from app.service.azure_blob import AzureBlobStorage
@@ -26,6 +26,7 @@ def health() -> Tuple[Dict[str, str], int]:
             'msg': 'API is up'}, 200
 
 
+@verify_jwt
 @app.route('/get-list-of-receipts', methods=['GET'])
 def get_list_of_receipts() -> Tuple[Dict[str, str], int]:
     """
@@ -41,6 +42,7 @@ def get_list_of_receipts() -> Tuple[Dict[str, str], int]:
             'msg': 'retrieved receipts successfully'}, 200
 
 
+@verify_jwt
 @app.route('/process-receipts/<company_name>/<customer_name>', methods=['POST'])
 def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, str], int]:
     """
@@ -89,6 +91,7 @@ def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, s
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
 
+@verify_jwt
 @app.route('/store-receipts-ai-assisted', methods=['POST'])
 def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
     """
@@ -193,6 +196,7 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
 
+@verify_jwt
 @app.route('/process-receipts-ai-assisted', methods=['POST'])
 def process_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
     """
@@ -230,6 +234,7 @@ def process_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
 
+@verify_jwt
 @app.route('/delete-file-by-path', methods=['DELETE'])
 def delete_file_by_file_path() -> tuple[Response, int]:
     """
@@ -259,6 +264,7 @@ def delete_file_by_file_path() -> tuple[Response, int]:
     return Receipts.delete_by_file_path(file_path)
 
 
+@verify_jwt
 @app.route('/get-file')
 def get_file():
     """
@@ -299,6 +305,7 @@ def get_file():
         return "Path parameter is missing", 400
 
 
+@verify_jwt
 @app.route('/get-list-of-files', methods=['GET'])
 def get_files():
     """
@@ -319,6 +326,7 @@ def get_files():
         return jsonify({'error': str(e)}), 500
 
 
+@verify_jwt
 @app.route('/delete-file', methods=['DELETE'])
 def delete_file() -> tuple[Response, int]:
     """
@@ -349,6 +357,7 @@ def delete_file() -> tuple[Response, int]:
 
 
 @app.route('/get-bar-chart-data', methods=['GET'])
+@verify_jwt
 def get_bar_chart_data():
     """
     Get bar chart data
@@ -398,6 +407,7 @@ def get_bar_chart_data():
         # return jsonify({'error': str(e)}), 500
 
 
+@verify_jwt
 @app.route('/get-pie-chart-data', methods=['GET'])
 def get_pie_chart_data():
     """
@@ -448,6 +458,7 @@ def get_pie_chart_data():
         # return jsonify({'error': str(e)}), 500
 
 
+@verify_jwt
 @app.route('/get-line-chart-data', methods=['GET'])
 def get_line_chart_data():
     """
@@ -498,6 +509,7 @@ def get_line_chart_data():
         # return jsonify({'error': str(e)}), 500
 
 
+@verify_jwt
 @app.route('/get-horizontal-chart-data', methods=['GET'])
 def get_horizontal_chart_data():
     """

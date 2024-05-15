@@ -1,15 +1,15 @@
 # Deploy the app to GCP Cloud Run
-docker build -t email-spammer:latest .
+docker build -t receipt-app:latest .
 
 # Tag the Docker image
-docker tag email-spammer:latest gcr.io/personal-projects-416300/email-spammer:latest
+docker tag email-spammer:latest gcr.io/personal-projects-416300/receipt-app:latest
 
 # Push the Docker image to Google Container Registry (GCR)
-docker push gcr.io/personal-projects-416300/email-spammer:latest
+docker push gcr.io/personal-projects-416300/receipt-app:latest
 
 # Deploy the app to Cloud Run
 gcloud run deploy email-spammer `
-  --image gcr.io/personal-projects-416300/email-spammer:latest `
+  --image gcr.io/personal-projects-416300/receipt-app:latest `
   --platform managed `
   --region us-central1 `
   --allow-unauthenticated `

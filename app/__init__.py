@@ -65,7 +65,6 @@ def verify_jwt(f):
             return jsonify({'message': 'Missing or invalid token format'}), 401
 
         token = token.split(' ')[1]
-
         # Try decoding token using each key until successful
         for key in keys:
             try:
