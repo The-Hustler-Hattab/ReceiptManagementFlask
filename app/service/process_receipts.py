@@ -1,4 +1,5 @@
 import datetime
+import traceback
 from typing import IO, Dict, Tuple
 
 from azure.ai.formrecognizer import DocumentAnalysisClient
@@ -35,13 +36,42 @@ class AzureFormRecognizer:
             # return {'message': f'An error occurred while processing the PDF file: {e}'}, 500
 
     @staticmethod
+    def process_receipts_ai_assisted(document_file: bytes | IO[bytes]) -> Tuple[Dict[str, str], int]:
+        try:
+            # anaylize pdf to process the receipt
+            receipt: Receipt = AzureFormRecognizer.analyze_invoice(document_file)
+            return {'message': 'PDF file received and processed successfully',
+                    'document_details': receipt.to_dict()}, 200
+        except Exception as e:
+            print(e)
+            raise e
+            # return {'message': f'An error occurred while processing the PDF file: {e}'}, 500
+
+    @staticmethod
+    def store_receipt_ai_assisted(document_file: bytes | IO[bytes],receipt: Receipt) -> Tuple[Dict[str, str], int]:
+        try:
+            # anaylize pdf to process the receipt
+            pdf_file_name = AzureFormRecognizer.construct_file_name(receipt)
+            print(f"pdf file name: {pdf_file_name}")
+            AzureBlobStorage.upload_file(document_file, pdf_file_name)
+            receipt.file_path = pdf_file_name
+            # save the receipt to the database
+            Receipts.save_receipt_to_db(receipt)
+            return {'message': 'PDF file received and processed successfully'}, 200
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+
+            return {'message': f'An error occurred while processing the PDF file: {e}'}, 500
+
+    @staticmethod
     def construct_file_name(receipt: Receipt) -> str:
         pdf_date = receipt.purchased_at.strftime("%Y_%m_%d-%H_%M_%S")
         pdf_year = receipt.purchased_at.strftime("%Y")
-        pdf_day = receipt.purchased_at.strftime("%d")
+        pdf_month = receipt.purchased_at.strftime("%m")
         pdf_vendor = receipt.vendor.replace(" ", "_").strip()
         pdf_total_cost = f"${receipt.total}"
-        return f"{pdf_year}/{pdf_vendor}/{pdf_day}/{pdf_date}-{pdf_total_cost}.pdf"
+        return f"{pdf_year}/{pdf_vendor}/{pdf_month}/{pdf_date}-{pdf_total_cost}.pdf"
 
     @staticmethod
     def analyze_invoice(document_file: bytes | IO[bytes]) -> Receipt:

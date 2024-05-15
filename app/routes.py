@@ -4,8 +4,8 @@ from typing import Tuple, Dict
 
 from flask import jsonify, Response, request, send_file
 
-from app import app
-from app.model.db.receipts_alchemy import Receipts
+from app import app, Constants
+from app.model.db.receipts_alchemy import Receipts, Receipt
 from app.service.analytics import AnalyticsService
 from app.service.azure_blob import AzureBlobStorage
 from app.service.process_receipts import AzureFormRecognizer
@@ -89,6 +89,145 @@ def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, s
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
 
+@app.route('/store-receipts-ai-assisted', methods=['POST'])
+def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
+    """
+     Process PDF receipts with AI assistance Endpoint
+     ---
+     tags:
+       - Receipts-Controller
+     consumes:
+       - multipart/form-data
+     parameters:
+       - name: file
+         in: formData
+         type: file
+         required: true
+         description: The PDF file to upload.
+       - name: total
+         in: formData
+         type: number
+         required: true
+         description: The total amount.
+       - name: sub_total
+         in: formData
+         type: number
+         required: true
+         description: The sub total amount.
+       - name: tax
+         in: formData
+         type: number
+         required: true
+         description: The tax amount.
+       - name: company_name
+         in: formData
+         type: string
+         required: true
+         description: The name of the company.
+       - name: vendor
+         in: formData
+         type: string
+         required: true
+         description: The vendor's name.
+       - name: purchased_at
+         in: formData
+         type: string
+         format: date
+         required: true
+         description: The purchase date.
+       - name: vendor_address
+         in: formData
+         type: string
+         required: false
+         description: The vendor's address.
+       - name: customer_name
+         in: formData
+         type: string
+         required: true
+         description: The customer's name.
+       - name: invoice_id
+         in: formData
+         type: string
+         required: false
+         description: The invoice ID.
+     responses:
+       200:
+         description: OK if the file is uploaded successfully.
+       400:
+         description: Bad Request if no file is provided or the file format is invalid.
+     """
+    # Check if the request contains a file
+    if 'file' not in request.files:
+        return {'error': 'No file provided'}, 404
+
+    pdf_file = request.files['file']
+    print(pdf_file)
+    # Check if the file is a PDF
+    if pdf_file.filename.endswith('.pdf'):
+        total = request.form.get('total')
+        sub_total = request.form.get('sub_total')
+        tax = request.form.get('tax')
+        company_name = request.form.get('company_name')
+        vendor = request.form.get('vendor')
+        purchased_at = request.form.get('purchased_at')
+        vendor_address = request.form.get('vendor_address')
+        customer_name = request.form.get('customer_name')
+        invoice_id = request.form.get('invoice_id')
+
+        receipt: Receipt = Receipt.empty()
+        receipt.total = float(total)
+        receipt.sub_total = float(sub_total)
+        receipt.tax = float(tax)
+        receipt.company_name = company_name
+        receipt.vendor = vendor
+        receipt.purchased_at = datetime.strptime(purchased_at, "%Y-%m-%d").date()
+        receipt.vendor_address = vendor_address
+        receipt.customer_name = customer_name
+        receipt.invoice_id = invoice_id
+        receipt.created_by = Constants.APP_NAME
+        receipt.created_at = datetime.now()
+        # Process the PDF file
+        # For demonstration, we'll just return a JSON message
+        return AzureFormRecognizer.store_receipt_ai_assisted(pdf_file.read(), receipt)
+    else:
+        return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
+
+
+@app.route('/process-receipts-ai-assisted', methods=['POST'])
+def process_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
+    """
+     process PDF receipts with ai assistance Endpoint
+     ---
+     tags:
+       - Receipts-Controller
+     consumes:
+       - multipart/form-data
+     parameters:
+       - name: file
+         in: formData
+         type: file
+         required: true
+         description: The PDF file to upload.
+
+     responses:
+       200:
+         description: OK if the file is uploaded successfully.
+       400:
+         description: Bad Request if no file is provided or the file format is invalid.
+     """
+    # Check if the request contains a file
+    if 'file' not in request.files:
+        return {'error': 'No file provided'}, 404
+
+    pdf_file = request.files['file']
+    print(pdf_file)
+    # Check if the file is a PDF
+    if pdf_file.filename.endswith('.pdf'):
+        # Process the PDF file
+        # For demonstration, we'll just return a JSON message
+        return AzureFormRecognizer.process_receipts_ai_assisted(pdf_file.read())
+    else:
+        return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
 
 @app.route('/delete-file-by-path', methods=['DELETE'])
@@ -118,9 +257,6 @@ def delete_file_by_file_path() -> tuple[Response, int]:
         return jsonify({'message': 'file_path parameter is required'}), 400
 
     return Receipts.delete_by_file_path(file_path)
-
-
-
 
 
 @app.route('/get-file')
@@ -212,7 +348,6 @@ def delete_file() -> tuple[Response, int]:
     return AzureBlobStorage.delete_file(blob_name)
 
 
-
 @app.route('/get-bar-chart-data', methods=['GET'])
 def get_bar_chart_data():
     """
@@ -262,6 +397,7 @@ def get_bar_chart_data():
         raise e
         # return jsonify({'error': str(e)}), 500
 
+
 @app.route('/get-pie-chart-data', methods=['GET'])
 def get_pie_chart_data():
     """
@@ -310,6 +446,7 @@ def get_pie_chart_data():
     except Exception as e:
         raise e
         # return jsonify({'error': str(e)}), 500
+
 
 @app.route('/get-line-chart-data', methods=['GET'])
 def get_line_chart_data():

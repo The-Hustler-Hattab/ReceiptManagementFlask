@@ -61,6 +61,21 @@ class Receipt:
             f'file_path: {self.file_path}, total: {self.total}, sub_total: {self.sub_total}, tax: {self.tax}, vendor: {self.vendor}, '
             f'company_name: {self.company_name}, created_by: {self.created_by}, purchased_at: {self.purchased_at}, vendor_address: {self.vendor_address}')
 
+    def to_dict(self):
+        return {
+            "file_path": self.file_path,
+            "total": self.total,
+            "sub_total": self.sub_total,
+            "tax": self.tax,
+            "company_name": self.company_name,
+            "vendor": self.vendor,
+            "created_by": self.created_by,
+            "purchased_at": self.purchased_at.strftime("%Y-%m-%d") if self.purchased_at else None,
+            "vendor_address": self.vendor_address,
+            "customer_name": self.customer_name,
+            "invoice_id": self.invoice_id
+        }
+
     @classmethod
     def empty(cls):
         return cls("", None, None, None, "", ""
@@ -299,7 +314,6 @@ ORDER BY
 
         return analytics_charts
 
-
     @staticmethod
     def fetch_between_line_chart_model(start_date: date, end_date: date) -> List[LineChart]:
         # Define your raw SQL query with parameters
@@ -337,9 +351,9 @@ ORDER BY
             analytics_chart = LineChart(
                 int(row[0]),  # year
                 int(row[1]),  # month
-                round(float(row[5]),2),  # over_all_total_cost
-                round(float(row[6]),2),  # over_all_total_sub_total
-                round(float(row[7]),2),  # over_all_total_tax
+                round(float(row[5]), 2),  # over_all_total_cost
+                round(float(row[6]), 2),  # over_all_total_sub_total
+                round(float(row[7]), 2),  # over_all_total_tax
             )
             analytics_charts.append(analytics_chart)
 
