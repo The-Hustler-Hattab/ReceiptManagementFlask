@@ -40,9 +40,9 @@ app.config[Constants.BLOB_CONNECTION_STRING] = os.getenv(Constants.BLOB_CONNECTI
 
 # load swagger
 swagger = Swagger(app)
+allowed_domains = ['https://hattab-llc.mtattab.com', 'http://localhost:4200', 'http://127.0.0.1:4200']
 
-CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*")
-CORS(app, resources={r"/delete_file": {"origins": "http://localhost:4200"}})
+CORS(app, resources={r"/*": {"origins": allowed_domains}}, allow_headers="*")
 
 OKTA_JWK_URL = app.config.get(Constants.OIDC_JWK_URL)
 
