@@ -1,13 +1,15 @@
 .env
 .history
 .idea
+.vscode
+.conda
+
 app/__pycache__
-app/model/__pycache__
 app/service/__pycache__
 app/service/test/__pycache__
-.conda
 app/util/__pycache__
 
+app/model/__pycache__
 app/model/test/__pycache__
 app/model/charts/__pycache__
 app/model/db/__pycache__
