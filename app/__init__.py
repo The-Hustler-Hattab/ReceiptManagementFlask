@@ -85,3 +85,6 @@ def verify_jwt(f):
 
 # Import routes after creating the app instance to avoid circular imports
 from app import routes
+from app.controller import analytics_controller
+from app.controller import blob_controller
+from app.controller import receipts_controller

@@ -11,3 +11,5 @@ app/util/__pycache__
 app/model/test/__pycache__
 app/model/charts/__pycache__
 app/model/db/__pycache__
+
+app/controller/__pycache__
