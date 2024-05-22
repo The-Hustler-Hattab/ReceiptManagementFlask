@@ -1,4 +1,5 @@
 import io
+from datetime import datetime, timedelta
 
 from flask import jsonify, Response, request, send_file
 
@@ -96,3 +97,60 @@ def delete_file() -> tuple[Response, int]:
         return jsonify({'message': 'blob_name parameter is required'}), 400
 
     return AzureBlobStorage.delete_file(blob_name)
+
+
+@app.route('/files-between', methods=['GET'])
+@verify_jwt
+def get_files_between():
+    """
+    Get files between two dates as zip file
+    ---
+    tags:
+      - Blob-Controller
+    parameters:
+      - name: start_date
+        in: query
+        type: string
+        required: true
+        description: YYYY-MM-DD
+      - name: end_date
+        in: query
+        type: string
+        required: true
+        description: YYYY-MM-DD
+
+    responses:
+      200:
+        description: bar zip files successfully
+      400:
+        description: Bad request
+      500:
+        description: Internal server error
+    """
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    print(start_date)
+    print(end_date)
+
+    try:
+        # Parse the date strings to datetime objects
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        # Set the start_date to the first day of the month
+        start_date = start_date.replace(day=1)
+
+        # Set the end_date to the last day of the month
+        end_date = end_date.replace(day=1) + timedelta(days=32)
+        end_date = end_date.replace(day=1) - timedelta(days=1)
+        print(start_date)
+        print(end_date)
+        # return AzureBlobStorage.get_files_between_dates(start_date, end_date)
+        return send_file(
+            io.BytesIO(AzureBlobStorage.get_files_between_dates(start_date, end_date)),
+            as_attachment=True,
+            download_name='Receipts.zip'
+        )
+    except Exception as e:
+        raise e
+        # return jsonify({'error': str(e)}), 500
+

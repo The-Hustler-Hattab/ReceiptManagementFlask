@@ -394,3 +394,21 @@ ORDER BY
             analytics_charts.append(analytics_chart)
 
         return analytics_charts
+
+    @staticmethod
+    def fetch_between_files(start_date: date, end_date: date) -> List[str]:
+        # Define your raw SQL query with parameters
+        sql_query = text("""
+        SELECT file_path from operations_receipts where purchased_at BETWEEN :start_date AND :end_date;
+        """)
+
+        # Execute the query using SQLAlchemy's execute() method
+        with engine.connect() as conn:
+            results = conn.execute(sql_query, {'start_date': start_date, 'end_date': end_date}).fetchall()
+
+        # Create list of AnalyticsChart objects from the query results
+        file_paths = []
+        for row in results:
+            file_paths.append(str(row[0]))
+
+        return file_paths

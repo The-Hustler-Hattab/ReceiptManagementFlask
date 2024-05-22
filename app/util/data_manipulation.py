@@ -6,6 +6,9 @@ class DataManipulation:
         "homedepo": "HOME DEPOT",
         "lowe": "LOWES",
         "walmart": "WALMART",
+        "aws": "AWS",
+        "azure": "AZURE",
+
     }
     @staticmethod
     def convert_keywords(vendor_name: str, mappings: dict) -> str:
@@ -23,6 +26,10 @@ class DataManipulation:
             return "--yellow-500"
         elif vendor.upper() == "LOWES":
             return "--blue-900"
+        elif vendor.upper() == "AWS":
+            return "--yellow-900"
+        elif vendor.upper() == "AZURE":
+            return "--blue-800"
         else:
             return "--red-500"
 
@@ -34,6 +41,10 @@ class DataManipulation:
             return "--yellow-400"
         elif vendor.upper() == "LOWES":
             return "--blue-800"
+        elif vendor.upper() == "AWS":
+            return "--yellow-800"
+        elif vendor.upper() == "AZURE":
+            return "--blue-700"
         else:
             return "--red-400"
 

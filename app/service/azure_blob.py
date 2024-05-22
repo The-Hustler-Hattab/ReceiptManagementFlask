@@ -1,7 +1,10 @@
+from datetime import datetime
 from typing import List, Dict, Union
 
 from azure.storage.blob import BlobServiceClient, ContainerClient, StorageStreamDownloader
 from flask import jsonify, Response
+from io import BytesIO
+import zipfile
 
 from app import app, Constants
 from app.model.db.receipts_alchemy import Receipts
@@ -75,3 +78,24 @@ class AzureBlobStorage:
                 })
 
         return file_structure
+
+    @staticmethod
+    def download_files_as_zip(files: List[str]) -> bytes:
+        zip_buffer = BytesIO()
+
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for file_name in files:
+                blob_stream_downloader = AzureBlobStorage.download_file(file_name)
+                file_content = blob_stream_downloader.readall()
+                zip_file.writestr(file_name, file_content)
+
+        zip_buffer.seek(0)
+        return zip_buffer.getvalue()
+
+    @staticmethod
+    def get_files_between_dates(start_date: datetime, end_date: datetime) -> bytes:
+        files : list[str] = Receipts.fetch_between_files(start_date, end_date)
+        print("Files: ", files)
+        zip_file = AzureBlobStorage.download_files_as_zip(files)
+        return zip_file
+

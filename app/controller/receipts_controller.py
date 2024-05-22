@@ -8,7 +8,6 @@ from app.model.db.receipts_alchemy import Receipts, Receipt
 from app.service.process_receipts import AzureFormRecognizer
 
 
-
 @app.route('/get-list-of-receipts', methods=['GET'])
 @verify_jwt
 def get_list_of_receipts() -> Tuple[Dict[str, str], int]:
@@ -23,7 +22,6 @@ def get_list_of_receipts() -> Tuple[Dict[str, str], int]:
     """
     return {'receipts': Receipts.convert_receipts_to_dicts(Receipts.get_all()),
             'msg': 'retrieved receipts successfully'}, 200
-
 
 
 @app.route('/process-receipts/<company_name>/<customer_name>', methods=['POST'])
@@ -73,7 +71,6 @@ def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, s
         return AzureFormRecognizer.process_receipts(pdf_file.read(), company_name, customer_name)
     else:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
-
 
 
 @app.route('/store-receipts-ai-assisted', methods=['POST'])
@@ -181,7 +178,6 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
 
-
 @app.route('/process-receipts-ai-assisted', methods=['POST'])
 @verify_jwt
 def process_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
@@ -218,7 +214,6 @@ def process_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         return AzureFormRecognizer.process_receipts_ai_assisted(pdf_file.read())
     else:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
-
 
 
 @app.route('/delete-file-by-path', methods=['DELETE'])
