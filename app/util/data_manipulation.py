@@ -7,7 +7,7 @@ class DataManipulation:
         "lowe": "LOWES",
         "walmart": "WALMART",
         "aws": "AWS",
-        "azure": "AZURE",
+        "microsoft": "MICROSOFT",
 
     }
     @staticmethod
@@ -21,30 +21,30 @@ class DataManipulation:
     @staticmethod
     def get_color(vendor:str) -> str:
         if vendor.upper() == "WALMART":
-            return "--blue-400"
+            return "--blue-300"
         elif vendor.upper() == "HOME DEPOT":
             return "--yellow-500"
         elif vendor.upper() == "LOWES":
             return "--blue-900"
         elif vendor.upper() == "AWS":
             return "--orange-600"
-        elif vendor.upper() == "AZURE":
-            return "--blue-800"
+        elif vendor.upper() == "MICROSOFT":
+            return "--blue-600"
         else:
             return "--red-500"
 
     @staticmethod
     def get_hover_color(vendor: str) -> str:
         if vendor.upper() == "WALMART":
-            return "--blue-300"
+            return "--blue-200"
         elif vendor.upper() == "HOME DEPOT":
             return "--yellow-400"
         elif vendor.upper() == "LOWES":
             return "--blue-800"
         elif vendor.upper() == "AWS":
             return "--orange-500"
-        elif vendor.upper() == "AZURE":
-            return "--blue-700"
+        elif vendor.upper() == "MICROSOFT":
+            return "--blue-500"
         else:
             return "--red-400"
 
