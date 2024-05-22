@@ -57,7 +57,6 @@ def get_bar_chart_data():
         # return jsonify({'error': str(e)}), 500
 
 
-
 @app.route('/get-pie-chart-data', methods=['GET'])
 @verify_jwt
 def get_pie_chart_data():
@@ -109,7 +108,6 @@ def get_pie_chart_data():
         # return jsonify({'error': str(e)}), 500
 
 
-
 @app.route('/get-line-chart-data', methods=['GET'])
 @verify_jwt
 def get_line_chart_data():
@@ -159,7 +157,6 @@ def get_line_chart_data():
     except Exception as e:
         raise e
         # return jsonify({'error': str(e)}), 500
-
 
 
 @app.route('/get-horizontal-chart-data', methods=['GET'])

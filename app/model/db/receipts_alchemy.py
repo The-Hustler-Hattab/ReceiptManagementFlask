@@ -324,17 +324,13 @@ SELECT
     ROUND(SUM(total), 2) AS total_cost,
     ROUND(SUM(sub_total), 2) AS total_sub_total,
     ROUND(SUM(tax), 2) AS total_tax,
-    (ROUND(SUM(total), 2) + 
-     LAG(ROUND(SUM(total), 2), 1, 0) OVER (ORDER BY YEAR(purchased_at), MONTH(purchased_at))) AS overall_total_cost,
-    (ROUND(SUM(sub_total), 2) + 
-     LAG(ROUND(SUM(sub_total), 2), 1, 0) OVER (ORDER BY YEAR(purchased_at), MONTH(purchased_at))) AS overall_total_sub_total,
-    (ROUND(SUM(tax), 2) + 
-     LAG(ROUND(SUM(tax), 2), 1, 0) OVER (ORDER BY YEAR(purchased_at), MONTH(purchased_at))) AS overall_total_tax
+    ROUND(SUM(SUM(total)) OVER (ORDER BY YEAR(purchased_at), MONTH(purchased_at)), 2) AS overall_total_cost,
+    ROUND(SUM(SUM(sub_total)) OVER (ORDER BY YEAR(purchased_at), MONTH(purchased_at)), 2) AS overall_total_sub_total,
+    ROUND(SUM(SUM(tax)) OVER (ORDER BY YEAR(purchased_at), MONTH(purchased_at)), 2) AS overall_total_tax
 FROM 
     operations_receipts
-    
-    where purchased_at BETWEEN :start_date AND :end_date
-    
+WHERE 
+    purchased_at BETWEEN :start_date AND :end_date
 GROUP BY 
     YEAR(purchased_at), MONTH(purchased_at)
 ORDER BY 

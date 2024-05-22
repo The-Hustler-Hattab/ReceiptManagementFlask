@@ -2,8 +2,10 @@ import datetime
 import traceback
 from typing import IO, Dict, Tuple
 
-from azure.ai.formrecognizer import DocumentAnalysisClient
+from azure.ai.formrecognizer import DocumentAnalysisClient, CurrencyValue
 from azure.core.credentials import AzureKeyCredential
+from openai.lib import azure
+
 from app import app, Constants
 from app.model.db.receipts_alchemy import Receipt, Receipts
 from app.service.azure_blob import AzureBlobStorage
@@ -139,12 +141,12 @@ class AzureFormRecognizer:
             invoice_total = invoice.fields.get("InvoiceTotal")
             if invoice_total:
                 print(
-                    "Invoice Total: {} has confidence: {}".format(
-                        invoice_total.value, invoice_total.confidence
+                    "Invoice Total: {} has confidence: {}, type {}".format(
+                        invoice_total.value, invoice_total.confidence, type(invoice_total.value)
                     )
                 )
-
-                receipt.total = float(str(invoice_total.value).replace("$", ""))
+                value: CurrencyValue = invoice_total.value
+                receipt.total = float(value.amount)
             subtotal = invoice.fields.get("SubTotal")
             if subtotal:
                 print(
@@ -153,7 +155,7 @@ class AzureFormRecognizer:
                     )
                 )
 
-                receipt.sub_total = float(str(subtotal.value).replace("$", ""))
+                receipt.sub_total = float(subtotal.value.amount)
             total_tax = invoice.fields.get("TotalTax")
             if total_tax:
                 print(
@@ -162,7 +164,7 @@ class AzureFormRecognizer:
                     )
                 )
 
-                receipt.tax = float(str(total_tax.value).replace("$", ""))
+                receipt.tax = float(total_tax.value.amount)
 
             print("----------------------------------------")
             return receipt

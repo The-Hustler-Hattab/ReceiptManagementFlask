@@ -27,7 +27,7 @@ class DataManipulation:
         elif vendor.upper() == "LOWES":
             return "--blue-900"
         elif vendor.upper() == "AWS":
-            return "--yellow-900"
+            return "--orange-600"
         elif vendor.upper() == "AZURE":
             return "--blue-800"
         else:
@@ -42,7 +42,7 @@ class DataManipulation:
         elif vendor.upper() == "LOWES":
             return "--blue-800"
         elif vendor.upper() == "AWS":
-            return "--yellow-800"
+            return "--orange-500"
         elif vendor.upper() == "AZURE":
             return "--blue-700"
         else:
