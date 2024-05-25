@@ -1,81 +1,71 @@
-# Email Spammer Flask Application
+# Receipt Processing API
 
 ## Overview
 
-The Email Spammer Flask Application is a simple API tool developed using Flask. This application allows users to send multiple emails to different recipients simultaneously. It can be used for testing purposes, educational demonstrations, or any scenario where bulk email sending is required.
+The Receipt Processing API is a powerful tool developed using Flask. This application allows users to upload and process receipts to extract essential data. It is designed for use in financial management, expense tracking, and any scenario where automated receipt processing is beneficial.
 
 ## Features
 
-1. **User Authentication:** The application supports user authentication through OAuth to ensure that only authorized users can access and utilize the email spamming functionality.
+1. **User Authentication:** The application supports user authentication to ensure that only authorized users can upload and process receipts.
 
-2. **Email Configuration:** Users can configure the email settings such as SMTP server, port, sender email address, and authentication credentials.
+2. **Receipt Upload:** Users can upload receipt images or PDFs through a simple interface.
 
-3. **Email Content:** Users can compose the email subject and body using a simple text editor provided by the application.
+3. **Data Extraction:** The application extracts key information from the receipts, such as vendor name, date, total amount, and line items.
 
-4. **Preview:** Before sending the emails, users can preview how the email will appear to the recipients.
+4. **Data Storage:** Extracted data is stored in a structured format in a database for easy retrieval and analysis.
 
-5. **Spamming:** Once all configurations are set, users can initiate the email spamming process. The application sends emails to all recipients in the list using the specified email settings.
+5. **API Endpoints:** Provides RESTful API endpoints for uploading receipts, retrieving processed data, and managing user accounts.
 
-6. **Status Tracking:** Users can track the status of each email sent, including whether it was successfully delivered or if any errors occurred.
+6. **Error Handling:** Comprehensive error handling to manage invalid uploads, unsupported file formats, and other potential issues.
 
 ## Installation
 
-1. Clone the repository from GitHub: [GitHub Repository Link](https://github.com/The-Hustler-Hattab/-Email-Spammer-Flask).
+1. Clone the repository from GitHub: [GitHub Repository Link](https://github.com/The-Hustler-Hattab/ReceiptManagementFlask).
 
 2. Navigate to the project directory.
 
 3. Create a virtual environment:
-    ```
+    ```bash
     $ python3 -m venv venv
     ```
 
 4. Activate the virtual environment:
     - On Windows:
-        ```
+        ```bash
         $ venv\Scripts\activate
         ```
     - On macOS and Linux:
-        ```
+        ```bash
         $ source venv/bin/activate
         ```
 
 5. Install the required dependencies:
-    ```
+    ```bash
     $ pip install -r requirements.txt
     ```
 
 6. Run the application:
+    ```bash
+    $ flask run
     ```
-    $ gunicorn -w 4 -b 0.0.0.0:5000 main:app
-    ```
 
-## Usage
-
-1. **User Authentication:**
-    - Access the application through a web browser.
-    - Log in using your credentials.
-
-2. **Email/SMS Configuration:**
-    - Navigate to the create email endpoint.
-    - Configure the SMTP server details, port, sender email address, and authentication credentials.
-
-3. **Email/SMS Content:**
-    - Navigate to the send email endpoint.
-    - Enter the email subject and body.
-
-4. **Preview:**
-    - Review the email content to ensure it appears as intended.
-
-5. **Spamming:**
-    - Navigate to the spam page.
-    - Click the "Send" button to initiate the email spamming process.
-
-6. **Status Tracking:**
-    - Monitor the status of each email sent on the status page.
 
 ## Technologies Used
 
 - **Flask:** Python micro web framework used for building the web application.
-- **Mysql:** Relational database used for storing Email credentials and email carriers.
-- **SMTP:** Simple Mail Transfer Protocol used for sending emails.
+- **Tesseract OCR:** Optical character recognition engine for extracting text from images.
+- **PostgreSQL:** Relational database used for storing extracted receipt data.
+- **JWT:** JSON Web Tokens for secure user authentication.
 
+
+## Contribution
+
+Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+---
+
+Feel free to reach out if you have any questions or need further assistance. Happy coding!
