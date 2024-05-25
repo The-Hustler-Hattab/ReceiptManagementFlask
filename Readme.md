@@ -20,7 +20,7 @@ The Receipt Processing API is a powerful tool developed using Flask. This applic
 
 ## Installation
 
-1. Clone the repository from GitHub: [GitHub Repository Link](https://github.com/The-Hustler-Hattab/ReceiptManagementFlask).
+1. Clone the repository from GitHub: [GitHub Project](https://github.com/The-Hustler-Hattab/ReceiptManagementFlask).
 
 2. Navigate to the project directory.
 
