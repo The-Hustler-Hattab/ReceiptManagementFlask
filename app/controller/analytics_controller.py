@@ -2,8 +2,9 @@ from datetime import datetime, timedelta
 
 from flask import request
 
-from app import app, verify_jwt
+from app import app
 from app.service.analytics import AnalyticsService
+from app.util.jwt_utls import verify_jwt
 
 
 @app.route('/get-bar-chart-data', methods=['GET'])

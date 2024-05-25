@@ -3,8 +3,10 @@ from datetime import datetime, timedelta
 
 from flask import jsonify, Response, request, send_file
 
-from app import app,  verify_jwt
+from app import app
 from app.service.azure_blob import AzureBlobStorage
+from app.util.jwt_utls import verify_jwt, verify_token_and_role
+
 
 @app.route('/get-file')
 @verify_jwt
@@ -70,7 +72,7 @@ def get_files():
 
 
 @app.route('/delete-file', methods=['DELETE'])
-@verify_jwt
+@verify_token_and_role
 def delete_file() -> tuple[Response, int]:
     """
     Delete a file from Azure Blob Storage

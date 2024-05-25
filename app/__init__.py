@@ -1,8 +1,5 @@
-from functools import wraps
 
-import requests
-from authlib.jose import jwt
-from flask import Flask, request, jsonify
+from flask import Flask
 from dotenv import load_dotenv
 import os
 from flasgger import Swagger
@@ -20,7 +17,7 @@ class Constants:
     APP_NAME = 'Receipts Service'
     BLOB_CONTAINER_NAME = 'BLOB_CONTAINER_NAME'
     BLOB_CONNECTION_STRING = 'BLOB_CONNECTION_STRING'
-
+    ADMIN_GROUP = 'ADMIN_GROUP'
 
 app = Flask(__name__)
 oauth = OAuth(app)
@@ -37,6 +34,7 @@ app.config[Constants.AZURE_FORM_RECOGNIZER_ENDPOINT] = os.getenv(Constants.AZURE
 app.config[Constants.AZURE_FORM_RECOGNIZER_KEY] = os.getenv(Constants.AZURE_FORM_RECOGNIZER_KEY)
 app.config[Constants.BLOB_CONTAINER_NAME] = os.getenv(Constants.BLOB_CONTAINER_NAME)
 app.config[Constants.BLOB_CONNECTION_STRING] = os.getenv(Constants.BLOB_CONNECTION_STRING)
+app.config[Constants.ADMIN_GROUP] = os.getenv(Constants.ADMIN_GROUP)
 
 # load swagger
 swagger = Swagger(app)
@@ -47,40 +45,10 @@ CORS(app, resources={r"/*": {"origins": allowed_domains}}, allow_headers="*")
 OKTA_JWK_URL = app.config.get(Constants.OIDC_JWK_URL)
 
 
-def get_okta_public_keys():
-    response = requests.get(OKTA_JWK_URL)
-    response.raise_for_status()
-    return response.json()['keys']
 
 
-keys = get_okta_public_keys()
 
 
-def verify_jwt(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        token = request.headers.get('Authorization')
-
-        if not token or not token.startswith('Bearer '):
-            return jsonify({'message': 'Missing or invalid token format'}), 401
-
-        token = token.split(' ')[1]
-        # Try decoding token using each key until successful
-        for key in keys:
-            try:
-                jwt.decode(token, key)
-
-                # If token is valid, proceed with the request
-                return f(*args, **kwargs)
-            except Exception as e:
-                print(e)
-                # Ignore any errors during decoding and try the next key
-                pass
-
-        # If none of the keys succeeded in decoding the token, return an error
-        return jsonify({'message': 'Invalid token'}), 401
-
-    return decorated_function
 
 
 # Import routes after creating the app instance to avoid circular imports

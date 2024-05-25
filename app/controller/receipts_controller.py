@@ -3,9 +3,10 @@ from typing import Tuple, Dict
 
 from flask import jsonify, Response, request
 
-from app import app, Constants, verify_jwt
+from app import app, Constants
 from app.model.db.receipts_alchemy import Receipts, Receipt
 from app.service.process_receipts import AzureFormRecognizer
+from app.util.jwt_utls import verify_jwt, verify_token_and_role
 
 
 @app.route('/get-list-of-receipts', methods=['GET'])
@@ -217,7 +218,7 @@ def process_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
 
 
 @app.route('/delete-file-by-path', methods=['DELETE'])
-@verify_jwt
+@verify_token_and_role
 def delete_file_by_file_path() -> tuple[Response, int]:
     """
     Delete a file from table by file_path
