@@ -53,8 +53,8 @@ The Receipt Processing API is a powerful tool developed using Flask. This applic
 ## Technologies Used
 
 - **Flask:** Python micro web framework used for building the web application.
-- **Tesseract OCR:** Optical character recognition engine for extracting text from images.
-- **PostgreSQL:** Relational database used for storing extracted receipt data.
+- **AZURE Form Recognizer:** Optical character recognition engine for extracting text from images.
+- **MySQL:** Relational database used for storing extracted receipt data.
 - **JWT:** JSON Web Tokens for secure user authentication.
 
 
