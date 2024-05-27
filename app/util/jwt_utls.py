@@ -68,3 +68,25 @@ def verify_token_and_role(f):
         return jsonify({'message': 'Invalid token'}), 401
 
     return decorated_function
+
+
+def get_jwt() -> str:
+    token = request.headers.get('Authorization')
+    return token.split(' ')[1]
+
+
+def get_decoded_token() -> dict:
+    token = get_jwt()
+    for key in keys:
+        try:
+            return jwt.decode(token, key)
+        except Exception as e:
+            print(e)
+            pass
+    return {}
+
+
+def get_full_name():
+    decoded_token = get_decoded_token()
+    full_name = decoded_token.get('UserFullName')
+    return full_name

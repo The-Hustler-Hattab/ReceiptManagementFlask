@@ -70,7 +70,6 @@ def get_files():
         return jsonify({'error': str(e)}), 500
 
 
-
 @app.route('/delete-file', methods=['DELETE'])
 @verify_token_and_role
 def delete_file() -> tuple[Response, int]:
@@ -155,4 +154,3 @@ def get_files_between():
     except Exception as e:
         raise e
         # return jsonify({'error': str(e)}), 500
-

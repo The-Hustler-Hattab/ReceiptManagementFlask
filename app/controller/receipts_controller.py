@@ -6,7 +6,7 @@ from flask import jsonify, Response, request
 from app import app, Constants
 from app.model.db.receipts_alchemy import Receipts, Receipt
 from app.service.process_receipts import AzureFormRecognizer
-from app.util.jwt_utls import verify_jwt, verify_token_and_role
+from app.util.jwt_utls import verify_jwt, verify_token_and_role, get_decoded_token, get_full_name
 
 
 @app.route('/get-list-of-receipts', methods=['GET'])
@@ -68,8 +68,8 @@ def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, s
     # Check if the file is a PDF
     if pdf_file.filename.endswith('.pdf'):
         # Process the PDF file
-        # For demonstration, we'll just return a JSON message
-        return AzureFormRecognizer.process_receipts(pdf_file.read(), company_name, customer_name)
+        created_by = get_full_name()
+        return AzureFormRecognizer.process_receipts(pdf_file.read(), company_name, customer_name, created_by)
     else:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
@@ -170,7 +170,14 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         receipt.vendor_address = vendor_address
         receipt.customer_name = customer_name
         receipt.invoice_id = invoice_id
-        receipt.created_by = Constants.APP_NAME
+
+        full_name = get_full_name()
+        print(full_name)
+        if full_name:
+            receipt.created_by = full_name
+        else:
+            receipt.created_by = Constants.APP_NAME
+
         receipt.created_at = datetime.now()
         # Process the PDF file
         # For demonstration, we'll just return a JSON message
