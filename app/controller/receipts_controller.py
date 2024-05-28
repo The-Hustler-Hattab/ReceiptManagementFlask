@@ -25,9 +25,9 @@ def get_list_of_receipts() -> Tuple[Dict[str, str], int]:
             'msg': 'retrieved receipts successfully'}, 200
 
 
-@app.route('/process-receipts/<company_name>/<customer_name>', methods=['POST'])
+@app.route('/process-receipts/<company_name>/<customer_name>/<spend_type>', methods=['POST'])
 @verify_jwt
-def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, str], int]:
+def process_receipts(company_name: str, customer_name: str,spend_type:str) -> Tuple[Dict[str, str], int]:
     """
      Process PDF receipts Endpoint
      ---
@@ -51,6 +51,11 @@ def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, s
          type: string
          required: true
          description: The name of the customer which made the purchase.
+       - name: spend_type
+         in: path
+         type: string
+         required: true
+         description: The spend category of the purchase.
      responses:
        200:
          description: OK if the file is uploaded successfully.
@@ -64,12 +69,13 @@ def process_receipts(company_name: str, customer_name: str) -> Tuple[Dict[str, s
     pdf_file = request.files['file']
     print(company_name)
     print(customer_name)
+    print(spend_type)
 
     # Check if the file is a PDF
     if pdf_file.filename.endswith('.pdf'):
         # Process the PDF file
         created_by = get_full_name()
-        return AzureFormRecognizer.process_receipts(pdf_file.read(), company_name, customer_name, created_by)
+        return AzureFormRecognizer.process_receipts(pdf_file.read(), company_name, customer_name, created_by,spend_type)
     else:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
@@ -136,6 +142,11 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
          type: string
          required: false
          description: The invoice ID.
+       - name: spend_type
+         in: formData
+         type: string
+         required: false
+         description: The spend category.
      responses:
        200:
          description: OK if the file is uploaded successfully.
@@ -159,7 +170,8 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         vendor_address = request.form.get('vendor_address')
         customer_name = request.form.get('customer_name')
         invoice_id = request.form.get('invoice_id')
-
+        spend_type = request.form.get('spend_type')
+        print(spend_type)
         receipt: Receipt = Receipt.empty()
         receipt.total = float(total)
         receipt.sub_total = float(sub_total)
@@ -170,6 +182,7 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         receipt.vendor_address = vendor_address
         receipt.customer_name = customer_name
         receipt.invoice_id = invoice_id
+        receipt.spend_type = spend_type
 
         full_name = get_full_name()
         print(full_name)

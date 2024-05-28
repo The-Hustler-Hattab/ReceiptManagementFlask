@@ -24,3 +24,6 @@ ADD COLUMN customer_name VARCHAR(200) ;
 
 ALTER TABLE operations_receipts
 ADD COLUMN invoice_id VARCHAR(200) ;
+
+ALTER TABLE operations_receipts
+ADD COLUMN spend_type VARCHAR(200) ;

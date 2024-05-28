@@ -37,13 +37,14 @@ class Receipt:
     vendor_address: str
     customer_name: str
     invoice_id: str
+    spend_type: str
 
     # def __init__(self) -> None:
     #     pass
 
     def __init__(self, file_path: str, total: float, sub_total: float, tax: float, vendor: str, company_name: str,
                  created_by: str, purchased_at: datetime.date, vendor_address: str, customer_name: str,
-                 invoice_id: str) -> None:
+                 invoice_id: str,spend_type: str) -> None:
         self.file_path = file_path
         self.total = total
         self.sub_total = sub_total
@@ -55,11 +56,13 @@ class Receipt:
         self.customer_name = customer_name
         self.invoice_id = invoice_id
         self.created_by = created_by
+        self.spend_type = spend_type
 
     def __str__(self) -> str:
         return (
             f'file_path: {self.file_path}, total: {self.total}, sub_total: {self.sub_total}, tax: {self.tax}, vendor: {self.vendor}, '
-            f'company_name: {self.company_name}, created_by: {self.created_by}, purchased_at: {self.purchased_at}, vendor_address: {self.vendor_address}')
+            f'company_name: {self.company_name}, created_by: {self.created_by}, purchased_at: {self.purchased_at}, '
+            f'vendor_address: {self.vendor_address} customer_name: {self.customer_name}, invoice_id: {self.invoice_id} ')
 
     def to_dict(self):
         return {
@@ -73,13 +76,14 @@ class Receipt:
             "purchased_at": self.purchased_at.strftime("%Y-%m-%d") if self.purchased_at else None,
             "vendor_address": self.vendor_address,
             "customer_name": self.customer_name,
-            "invoice_id": self.invoice_id
+            "invoice_id": self.invoice_id,
+            "spend_type": self.spend_type
         }
 
     @classmethod
     def empty(cls):
         return cls("", None, None, None, "", ""
-                   , "", None, "", "", "")
+                   , "", None, "", "", "","")
 
     def convert_to_receipts_alchemy(self) -> object:
         return Receipts(file_path=self.file_path, total=self.total,
@@ -87,7 +91,8 @@ class Receipt:
                         company_name=self.company_name,
                         vendor=self.vendor, created_by=self.created_by,
                         purchased_at=self.purchased_at, vendor_address=self.vendor_address,
-                        customer_name=self.customer_name, invoice_id=self.invoice_id)
+                        customer_name=self.customer_name, invoice_id=self.invoice_id,
+                        spend_type=self.spend_type)
 
 
 class Receipts(Base):
@@ -106,6 +111,7 @@ class Receipts(Base):
     vendor_address: str = Column(String(2000), nullable=True)
     customer_name: str = Column(String(200), nullable=True)
     invoice_id: str = Column(String(200), nullable=True)
+    spend_type: str = Column(String(200), nullable=True)
 
     def __str__(self) -> str:
         return (
@@ -127,7 +133,8 @@ class Receipts(Base):
             'purchased_at': str(self.purchased_at),
             'vendor_address': self.vendor_address,
             'customer_name': self.customer_name,
-            'invoice_id': self.invoice_id
+            'invoice_id': self.invoice_id,
+            'spend_type': self.spend_type
         }
 
     @staticmethod

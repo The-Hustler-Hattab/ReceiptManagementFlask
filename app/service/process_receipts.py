@@ -18,13 +18,15 @@ key = app.config.get(Constants.AZURE_FORM_RECOGNIZER_KEY)
 class AzureFormRecognizer:
 
     @staticmethod
-    def process_receipts(document_file: bytes | IO[bytes], company_name: str, customer_name: str, created_by: str) -> Tuple[Dict[str, str], int]:
+    def process_receipts(document_file: bytes | IO[bytes], company_name: str, customer_name: str, created_by: str,
+                         spend_type:str) -> Tuple[Dict[str, str], int]:
         try:
             # anaylize pdf to process the receipt
             receipt: Receipt = AzureFormRecognizer.analyze_invoice(document_file)
             receipt.company_name = company_name
             receipt.customer_name = customer_name
             receipt.created_by = created_by
+            receipt.spend_type = spend_type
             # upload the pdf to azure blob storage
             pdf_file_name = AzureFormRecognizer.construct_file_name(receipt)
             print(f"pdf file name: {pdf_file_name}")
