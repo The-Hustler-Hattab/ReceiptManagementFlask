@@ -82,7 +82,7 @@ class AzureFormRecognizer:
     def analyze_invoice(document_file: bytes | IO[bytes]) -> Receipt:
         receipt = Receipt.empty()
         receipt.created_at = datetime.datetime.now()
-
+        receipt.sha256 = DataManipulation.compute_hash(document_file)
         document_analysis_client = DocumentAnalysisClient(
             endpoint=endpoint, credential=AzureKeyCredential(key)
         )

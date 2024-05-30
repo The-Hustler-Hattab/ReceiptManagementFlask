@@ -1,5 +1,6 @@
 import io
 from datetime import datetime, timedelta
+from typing import Tuple, Dict
 
 from flask import jsonify, Response, request, send_file
 
@@ -154,3 +155,20 @@ def get_files_between():
     except Exception as e:
         raise e
         # return jsonify({'error': str(e)}), 500
+
+@app.route('/update-file-hashes', methods=['POST'])
+@verify_jwt
+def update_file_hashes() -> tuple[Response, int]:
+    """
+     update file hashes Endpoint
+     ---
+     tags:
+       - Receipts-Controller
+     responses:
+       200:
+         description: OK if the file hashes updated successfully.
+       400:
+         description: Bad Request if no file is provided or the format is invalid.
+     """
+
+    return AzureBlobStorage.update_files_hash_in_table()

@@ -1,3 +1,5 @@
+import hashlib
+from typing import Union, IO
 
 
 class DataManipulation:
@@ -10,6 +12,7 @@ class DataManipulation:
         "microsoft": "MICROSOFT",
 
     }
+
     @staticmethod
     def convert_keywords(vendor_name: str, mappings: dict) -> str:
         for keyword, replacement in mappings.items():
@@ -19,7 +22,7 @@ class DataManipulation:
         return vendor_name
 
     @staticmethod
-    def get_color(vendor:str) -> str:
+    def get_color(vendor: str) -> str:
         if vendor.upper() == "WALMART":
             return "--blue-300"
         elif vendor.upper() == "HOME DEPOT":
@@ -65,3 +68,19 @@ class DataManipulation:
             12: "December"
         }
         return month_mapping[month_numbers]
+
+    @staticmethod
+    def compute_hash(document_file: Union[bytes, IO[bytes]]) -> str:
+        # Initialize the hash object (using SHA-256 as an example)
+        hash_obj = hashlib.sha256()
+
+        if isinstance(document_file, bytes):
+            # If the document is a bytes object, update the hash directly
+            hash_obj.update(document_file)
+        else:
+            # If the document is a file-like object, read it in chunks of 1 MB
+            for chunk in iter(lambda: document_file.read(1048576), b''):
+                hash_obj.update(chunk)
+
+        # Return the hexadecimal digest of the hash
+        return hash_obj.hexdigest()

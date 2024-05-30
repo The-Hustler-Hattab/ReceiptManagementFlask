@@ -27,3 +27,9 @@ ADD COLUMN invoice_id VARCHAR(200) ;
 
 ALTER TABLE operations_receipts
 ADD COLUMN spend_type VARCHAR(200) ;
+
+ALTER TABLE operations_receipts
+ADD COLUMN sha256 VARCHAR(200) ;
+
+
+ALTER TABLE LLC.operations_receipts ADD CONSTRAINT operations_receipts_unique UNIQUE KEY (sha256);

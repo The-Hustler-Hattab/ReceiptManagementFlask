@@ -38,13 +38,14 @@ class Receipt:
     customer_name: str
     invoice_id: str
     spend_type: str
+    sha256: str
 
     # def __init__(self) -> None:
     #     pass
 
     def __init__(self, file_path: str, total: float, sub_total: float, tax: float, vendor: str, company_name: str,
                  created_by: str, purchased_at: datetime.date, vendor_address: str, customer_name: str,
-                 invoice_id: str,spend_type: str) -> None:
+                 invoice_id: str, spend_type: str, sha256: str) -> None:
         self.file_path = file_path
         self.total = total
         self.sub_total = sub_total
@@ -57,6 +58,7 @@ class Receipt:
         self.invoice_id = invoice_id
         self.created_by = created_by
         self.spend_type = spend_type
+        self.sha256 = sha256
 
     def __str__(self) -> str:
         return (
@@ -77,13 +79,14 @@ class Receipt:
             "vendor_address": self.vendor_address,
             "customer_name": self.customer_name,
             "invoice_id": self.invoice_id,
-            "spend_type": self.spend_type
+            "spend_type": self.spend_type,
+            "sha256": self.sha256,
         }
 
     @classmethod
     def empty(cls):
         return cls("", None, None, None, "", ""
-                   , "", None, "", "", "","")
+                   , "", None, "", "", "", "", "")
 
     def convert_to_receipts_alchemy(self) -> object:
         return Receipts(file_path=self.file_path, total=self.total,
@@ -92,7 +95,7 @@ class Receipt:
                         vendor=self.vendor, created_by=self.created_by,
                         purchased_at=self.purchased_at, vendor_address=self.vendor_address,
                         customer_name=self.customer_name, invoice_id=self.invoice_id,
-                        spend_type=self.spend_type)
+                        spend_type=self.spend_type, sha256=self.sha256)
 
 
 class Receipts(Base):
@@ -112,6 +115,7 @@ class Receipts(Base):
     customer_name: str = Column(String(200), nullable=True)
     invoice_id: str = Column(String(200), nullable=True)
     spend_type: str = Column(String(200), nullable=True)
+    sha256: str = Column(String(200), nullable=True)
 
     def __str__(self) -> str:
         return (
@@ -134,7 +138,8 @@ class Receipts(Base):
             'vendor_address': self.vendor_address,
             'customer_name': self.customer_name,
             'invoice_id': self.invoice_id,
-            'spend_type': self.spend_type
+            'spend_type': self.spend_type,
+            'sha256': self.sha256
         }
 
     @staticmethod
@@ -158,6 +163,11 @@ class Receipts(Base):
     def get_all() -> list[object]:
         session.close()
         return session.query(Receipts).all()
+
+    @staticmethod
+    def update_hash(file_path: str, sha256: str) -> None:
+        session.query(Receipts).filter(Receipts.file_path == file_path).update({Receipts.sha256: sha256})
+        session.commit()
 
     @staticmethod
     def save_receipt_to_db(receipt: Receipt) -> None:

@@ -27,7 +27,7 @@ def get_list_of_receipts() -> Tuple[Dict[str, str], int]:
 
 @app.route('/process-receipts/<company_name>/<customer_name>/<spend_type>', methods=['POST'])
 @verify_jwt
-def process_receipts(company_name: str, customer_name: str,spend_type:str) -> Tuple[Dict[str, str], int]:
+def process_receipts(company_name: str, customer_name: str, spend_type: str) -> Tuple[Dict[str, str], int]:
     """
      Process PDF receipts Endpoint
      ---
@@ -75,7 +75,8 @@ def process_receipts(company_name: str, customer_name: str,spend_type:str) -> Tu
     if pdf_file.filename.endswith('.pdf'):
         # Process the PDF file
         created_by = get_full_name()
-        return AzureFormRecognizer.process_receipts(pdf_file.read(), company_name, customer_name, created_by,spend_type)
+        return AzureFormRecognizer.process_receipts(pdf_file.read(), company_name, customer_name, created_by,
+                                                    spend_type)
     else:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
 
@@ -147,6 +148,11 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
          type: string
          required: false
          description: The spend category.
+       - name: sha256
+         in: formData
+         type: string
+         required: true
+         description: hash of the file content.
      responses:
        200:
          description: OK if the file is uploaded successfully.
@@ -171,6 +177,7 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         customer_name = request.form.get('customer_name')
         invoice_id = request.form.get('invoice_id')
         spend_type = request.form.get('spend_type')
+        sha256 = request.form.get('sha256')
         print(spend_type)
         receipt: Receipt = Receipt.empty()
         receipt.total = float(total)
@@ -183,6 +190,7 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         receipt.customer_name = customer_name
         receipt.invoice_id = invoice_id
         receipt.spend_type = spend_type
+        receipt.sha256 = sha256
 
         full_name = get_full_name()
         print(full_name)

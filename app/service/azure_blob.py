@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Tuple
 
 from azure.storage.blob import BlobServiceClient, ContainerClient, StorageStreamDownloader
 from flask import jsonify, Response
@@ -8,6 +8,7 @@ import zipfile
 
 from app import app, Constants
 from app.model.db.receipts_alchemy import Receipts
+from app.util.data_manipulation import DataManipulation
 
 
 class AzureBlobStorage:
@@ -36,7 +37,7 @@ class AzureBlobStorage:
             return jsonify({'message': f'File "{blob_name}" deleted successfully'}), 200
         except Exception as e:
 
-            error_msg= f"Failed to delete file '{blob_name}': {e}"
+            error_msg = f"Failed to delete file '{blob_name}': {e}"
             print(error_msg)
             return jsonify({'message': error_msg}), 500
 
@@ -72,7 +73,7 @@ class AzureBlobStorage:
                 current_level.append({
                     "data": {
                         "name": parts[-1],
-                        "type": "File" ,
+                        "type": "File",
                         "path": blob.name
                     }
                 })
@@ -94,8 +95,21 @@ class AzureBlobStorage:
 
     @staticmethod
     def get_files_between_dates(start_date: datetime, end_date: datetime) -> bytes:
-        files : list[str] = Receipts.fetch_between_files(start_date, end_date)
+        files: list[str] = Receipts.fetch_between_files(start_date, end_date)
         print("Files: ", files)
         zip_file = AzureBlobStorage.download_files_as_zip(files)
         return zip_file
+
+    @staticmethod
+    def update_files_hash_in_table() -> tuple[Response, int]:
+        receipts: list[Receipts] = Receipts.get_all()
+        for receipt in receipts:
+            file_path: str = receipt.file_path
+            if file_path is not None or file_path != "":
+                file: StorageStreamDownloader = AzureBlobStorage.download_file(file_path)
+                file_hash = DataManipulation.compute_hash(file.readall())
+                Receipts.update_hash(file_path, file_hash)
+
+        return jsonify({'message': "Files hash updated successfully"}), 200
+
 
