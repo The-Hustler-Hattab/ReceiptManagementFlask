@@ -33,6 +33,14 @@ class DataManipulation:
             return "--orange-600"
         elif vendor.upper() == "MICROSOFT":
             return "--blue-600"
+        elif vendor.upper() == "Allegheny County".upper():
+            return "--green-500"
+        elif vendor.upper() == "LEGALZOOM".upper():
+            return "--purple-500"
+        elif vendor.upper() == "BusyBeaver".upper():
+            return "--brown-500"
+        elif vendor.upper() == "American_Home_Shield".upper():
+            return "--yellow-500"
         else:
             return "--red-500"
 
@@ -48,6 +56,14 @@ class DataManipulation:
             return "--orange-500"
         elif vendor.upper() == "MICROSOFT":
             return "--blue-500"
+        elif vendor.upper() == "Allegheny County".upper():
+            return "--green-400"
+        elif vendor.upper() == "LEGALZOOM".upper():
+            return "--purple-400"
+        elif vendor.upper() == "BusyBeaver".upper():
+            return "--brown-400"
+        elif vendor.upper() == "American_Home_Shield".upper():
+            return "--yellow-400"
         else:
             return "--red-400"
 
