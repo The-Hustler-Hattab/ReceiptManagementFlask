@@ -38,7 +38,7 @@ class DataManipulation:
         elif vendor.upper() == "LEGALZOOM".upper():
             return "--purple-500"
         elif vendor.upper() == "BusyBeaver".upper():
-            return "--brown-500"
+            return "--pink-500"
         elif vendor.upper() == "American_Home_Shield".upper():
             return "--yellow-500"
         else:
@@ -61,7 +61,7 @@ class DataManipulation:
         elif vendor.upper() == "LEGALZOOM".upper():
             return "--purple-400"
         elif vendor.upper() == "BusyBeaver".upper():
-            return "--brown-400"
+            return "--pink-400"
         elif vendor.upper() == "American_Home_Shield".upper():
             return "--yellow-400"
         else:
