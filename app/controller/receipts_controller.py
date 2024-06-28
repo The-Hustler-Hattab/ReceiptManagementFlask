@@ -67,18 +67,20 @@ def process_receipts(company_name: str, customer_name: str, spend_type: str) -> 
         return {'error': 'No file provided'}, 404
 
     pdf_file = request.files['file']
+    filename = pdf_file.filename.lower()
     print(company_name)
     print(customer_name)
     print(spend_type)
 
     # Check if the file is a PDF
-    if pdf_file.filename.endswith('.pdf'):
+    if filename.endswith('.pdf') or filename.endswith('.png') or filename.endswith('.jpeg') or filename.endswith('.jpg'):
         # Process the PDF file
         created_by = get_full_name()
+        # created_by = "TEST"
         return AzureFormRecognizer.process_receipts(pdf_file.read(), company_name, customer_name, created_by,
-                                                    spend_type)
+                                                    spend_type,filename)
     else:
-        return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
+        return {'message': 'Invalid file format. Only PDF/JPG/JPEG/PNG files are allowed'}, 404
 
 
 @app.route('/store-receipts-ai-assisted', methods=['POST'])
@@ -164,9 +166,11 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         return {'error': 'No file provided'}, 404
 
     pdf_file = request.files['file']
+    filename = pdf_file.filename.lower()
+
     print(pdf_file)
     # Check if the file is a PDF
-    if pdf_file.filename.endswith('.pdf'):
+    if filename.endswith('.pdf') or filename.endswith('.png') or filename.endswith('.jpeg') or filename.endswith('.jpg'):
         total = request.form.get('total')
         sub_total = request.form.get('sub_total')
         tax = request.form.get('tax')
@@ -193,6 +197,7 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         receipt.sha256 = sha256
 
         full_name = get_full_name()
+        # full_name = "TEST"
         print(full_name)
         if full_name:
             receipt.created_by = full_name
@@ -202,9 +207,9 @@ def store_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         receipt.created_at = datetime.now()
         # Process the PDF file
         # For demonstration, we'll just return a JSON message
-        return AzureFormRecognizer.store_receipt_ai_assisted(pdf_file.read(), receipt)
+        return AzureFormRecognizer.store_receipt_ai_assisted(pdf_file.read(), receipt, filename)
     else:
-        return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
+        return {'message': 'Invalid file format. Only PDF/JPG/JPEG/PNG files are allowed'}, 404
 
 
 @app.route('/process-receipts-ai-assisted', methods=['POST'])
@@ -235,14 +240,16 @@ def process_receipts_ai_assisted() -> Tuple[Dict[str, str], int]:
         return {'error': 'No file provided'}, 404
 
     pdf_file = request.files['file']
+    filename = pdf_file.filename.lower()
+
     print(pdf_file)
     # Check if the file is a PDF
-    if pdf_file.filename.endswith('.pdf'):
+    if filename.endswith('.pdf') or filename.endswith('.png') or filename.endswith('.jpeg') or filename.endswith('.jpg'):
         # Process the PDF file
         # For demonstration, we'll just return a JSON message
         return AzureFormRecognizer.process_receipts_ai_assisted(pdf_file.read())
     else:
-        return {'message': 'Invalid file format. Only PDF files are allowed'}, 404
+        return {'message': 'Invalid file format. Only PDF/JPG/JPEG/PNG files are allowed'}, 404
 
 
 @app.route('/delete-file-by-path', methods=['DELETE'])

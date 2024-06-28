@@ -17,5 +17,5 @@ class TestAzureFormRecognizer(TestCase):
         receipt.purchased_at = datetime.datetime.now()
         receipt.total= 26.04
         receipt.vendor = "Home Depot"
-        file_name = AzureFormRecognizer.construct_file_name(receipt)
+        file_name = AzureFormRecognizer.construct_file_name(receipt,"test.pdf")
         print(f"File name constructed successfully: {file_name} ")

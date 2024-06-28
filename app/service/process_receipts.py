@@ -19,7 +19,7 @@ class AzureFormRecognizer:
 
     @staticmethod
     def process_receipts(document_file: bytes | IO[bytes], company_name: str, customer_name: str, created_by: str,
-                         spend_type:str) -> Tuple[Dict[str, str], int]:
+                         spend_type:str,filename:str) -> Tuple[Dict[str, str], int]:
         try:
             # anaylize pdf to process the receipt
             receipt: Receipt = AzureFormRecognizer.analyze_invoice(document_file)
@@ -28,13 +28,13 @@ class AzureFormRecognizer:
             receipt.created_by = created_by
             receipt.spend_type = spend_type
             # upload the pdf to azure blob storage
-            pdf_file_name = AzureFormRecognizer.construct_file_name(receipt)
-            print(f"pdf file name: {pdf_file_name}")
-            AzureBlobStorage.upload_file(document_file, pdf_file_name)
-            receipt.file_path = pdf_file_name
+            receipt_file_name = AzureFormRecognizer.construct_file_name(receipt,filename)
+            print(f"Receipt file name: {receipt_file_name}")
+            AzureBlobStorage.upload_file(document_file, receipt_file_name)
+            receipt.file_path = receipt_file_name
             # save the receipt to the database
             Receipts.save_receipt_to_db(receipt)
-            return {'message': 'PDF file received and processed successfully'}, 200
+            return {'message': 'Receipt file received and processed successfully'}, 200
         except Exception as e:
             print(e)
             raise e
@@ -45,7 +45,7 @@ class AzureFormRecognizer:
         try:
             # anaylize pdf to process the receipt
             receipt: Receipt = AzureFormRecognizer.analyze_invoice(document_file)
-            return {'message': 'PDF file received and processed successfully',
+            return {'message': 'Receipt file received and processed successfully',
                     'document_details': receipt.to_dict()}, 200
         except Exception as e:
             print(e)
@@ -53,30 +53,31 @@ class AzureFormRecognizer:
             # return {'message': f'An error occurred while processing the PDF file: {e}'}, 500
 
     @staticmethod
-    def store_receipt_ai_assisted(document_file: bytes | IO[bytes],receipt: Receipt) -> Tuple[Dict[str, str], int]:
+    def store_receipt_ai_assisted(document_file: bytes | IO[bytes],receipt: Receipt, filename: str) -> Tuple[Dict[str, str], int]:
         try:
             # anaylize pdf to process the receipt
-            pdf_file_name = AzureFormRecognizer.construct_file_name(receipt)
-            print(f"pdf file name: {pdf_file_name}")
-            AzureBlobStorage.upload_file(document_file, pdf_file_name)
-            receipt.file_path = pdf_file_name
+            receipt_file_name = AzureFormRecognizer.construct_file_name(receipt,filename)
+            print(f"Receipt file name: {receipt_file_name}")
+            AzureBlobStorage.upload_file(document_file, receipt_file_name)
+            receipt.file_path = receipt_file_name
             # save the receipt to the database
             Receipts.save_receipt_to_db(receipt)
-            return {'message': 'PDF file received and processed successfully'}, 200
+            return {'message': 'Receipt file received and processed successfully'}, 200
         except Exception as e:
             print(e)
             traceback.print_exc()
 
-            return {'message': f'An error occurred while processing the PDF file: {e}'}, 500
+            return {'message': f'An error occurred while processing the Receipt file: {e}'}, 500
 
     @staticmethod
-    def construct_file_name(receipt: Receipt) -> str:
+    def construct_file_name(receipt: Receipt,filename:str) -> str:
         pdf_date = receipt.purchased_at.strftime("%Y_%m_%d-%H_%M_%S")
         pdf_year = receipt.purchased_at.strftime("%Y")
         pdf_month = receipt.purchased_at.strftime("%m")
         pdf_vendor = receipt.vendor.replace(" ", "_").strip()
         pdf_total_cost = f"${receipt.total}"
-        return f"{pdf_year}/{pdf_vendor}/{pdf_month}/{pdf_date}-{pdf_total_cost}.pdf"
+        file_extension = filename.split(".")[-1]
+        return f"{pdf_year}/{pdf_vendor}/{pdf_month}/{pdf_date}-{pdf_total_cost}.{file_extension}"
 
     @staticmethod
     def analyze_invoice(document_file: bytes | IO[bytes]) -> Receipt:
