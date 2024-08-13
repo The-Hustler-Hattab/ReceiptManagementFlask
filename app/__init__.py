@@ -56,3 +56,4 @@ from app import routes
 from app.controller import analytics_controller
 from app.controller import blob_controller
 from app.controller import receipts_controller
+from app.controller import sherief_sale_controller
