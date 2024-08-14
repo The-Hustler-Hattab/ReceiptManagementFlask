@@ -9,6 +9,12 @@ import zipfile
 from app import app, Constants
 from app.model.db.receipts_alchemy import Receipts
 from app.util.data_manipulation import DataManipulation
+from enum import Enum
+
+
+class BlobType(Enum):
+    SHERIF_SALE_BLOB = 'SHERIF_SALE_BLOB'
+    RECEIPT_BLOB = 'RECEIPT_BLOB'
 
 
 class AzureBlobStorage:
@@ -18,10 +24,17 @@ class AzureBlobStorage:
     container_client: ContainerClient = blob_service_client.get_container_client(blob_container_name)
 
     @staticmethod
-    def upload_file(data: bytes, blob_name: str) -> None:
-        # with open(local_file_path, "rb") as data:
-        AzureBlobStorage.container_client.upload_blob(name=blob_name, data=data)
-        print(f"File '{blob_name}' uploaded to Azure Blob Storage.")
+    def upload_file(data: bytes, blob_name: str, blob_type: BlobType) -> None:
+        if blob_type == BlobType.SHERIF_SALE_BLOB:
+            container_name = app.config.get(Constants.BLOB_CONTAINER_SHERIF_SALE)
+            container_connection_string = app.config.get(Constants.BLOB_CONTAINER_SHERIF_SALE_CONNECTION_STRING)
+            blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(container_connection_string)
+            container_client: ContainerClient = blob_service_client.get_container_client(container_name)
+            container_client.upload_blob(name=blob_name, data=data)
+            print(f"File '{blob_name}' uploaded to Azure sherif Blob Storage.")
+        else:
+            AzureBlobStorage.container_client.upload_blob(name=blob_name, data=data)
+            print(f"File '{blob_name}' uploaded to Azure receipt Blob Storage.")
 
     @staticmethod
     def download_file(blob_name: str) -> StorageStreamDownloader:
@@ -111,5 +124,3 @@ class AzureBlobStorage:
                 Receipts.update_hash(file_path, file_hash)
 
         return jsonify({'message': "Files hash updated successfully"}), 200
-
-

@@ -8,7 +8,7 @@ from openai.lib import azure
 
 from app import app, Constants
 from app.model.db.receipts_alchemy import Receipt, Receipts
-from app.service.azure_blob import AzureBlobStorage
+from app.service.azure_blob import AzureBlobStorage, BlobType
 from app.util.data_manipulation import DataManipulation
 
 endpoint = app.config.get(Constants.AZURE_FORM_RECOGNIZER_ENDPOINT)
@@ -30,7 +30,7 @@ class AzureFormRecognizer:
             # upload the pdf to azure blob storage
             receipt_file_name = AzureFormRecognizer.construct_file_name(receipt,filename)
             print(f"Receipt file name: {receipt_file_name}")
-            AzureBlobStorage.upload_file(document_file, receipt_file_name)
+            AzureBlobStorage.upload_file(document_file, receipt_file_name, BlobType.RECEIPT_BLOB)
             receipt.file_path = receipt_file_name
             # save the receipt to the database
             Receipts.save_receipt_to_db(receipt)
@@ -58,7 +58,7 @@ class AzureFormRecognizer:
             # anaylize pdf to process the receipt
             receipt_file_name = AzureFormRecognizer.construct_file_name(receipt,filename)
             print(f"Receipt file name: {receipt_file_name}")
-            AzureBlobStorage.upload_file(document_file, receipt_file_name)
+            AzureBlobStorage.upload_file(document_file, receipt_file_name, BlobType.RECEIPT_BLOB)
             receipt.file_path = receipt_file_name
             # save the receipt to the database
             Receipts.save_receipt_to_db(receipt)
