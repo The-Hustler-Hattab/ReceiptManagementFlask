@@ -27,9 +27,7 @@ class AzureBlobStorage:
     def upload_file(data: bytes, blob_name: str, blob_type: BlobType) -> None:
         if blob_type == BlobType.SHERIF_SALE_BLOB:
             container_name = app.config.get(Constants.BLOB_CONTAINER_SHERIF_SALE)
-            container_connection_string = app.config.get(Constants.BLOB_CONTAINER_SHERIF_SALE_CONNECTION_STRING)
-            blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(container_connection_string)
-            container_client: ContainerClient = blob_service_client.get_container_client(container_name)
+            container_client: ContainerClient = AzureBlobStorage.blob_service_client.get_container_client(container_name)
             container_client.upload_blob(name=blob_name, data=data)
             print(f"File '{blob_name}' uploaded to Azure sherif Blob Storage.")
         else:
