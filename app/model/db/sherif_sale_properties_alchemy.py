@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Union
 
 from sqlalchemy import Column, Numeric, String, DateTime
 
@@ -21,6 +21,7 @@ class Property:
     parcel_tax_id: str
     comments: str
     SHERIEF_SALE_CHILD_ID: int
+    zillow_link: str
 
     def __init__(self, sale: str = "", case_number: str = "", sale_type: str = "", status: str = "",
                  tracts: str = "", cost_tax_bid: str = "", plaintiff: str = "",
@@ -52,7 +53,8 @@ class Property:
                                   plaintiff=self.plaintiff, attorney_for_plaintiff=self.attorney_for_plaintiff,
                                   defendant=self.defendant, property_address=self.property_address,
                                   municipality=self.municipality, parcel_tax_id=self.parcel_tax_id,
-                                  comments=self.comments, SHERIEF_SALE_CHILD_ID=self.SHERIEF_SALE_CHILD_ID)
+                                  comments=self.comments, SHERIEF_SALE_CHILD_ID=self.SHERIEF_SALE_CHILD_ID,
+                                  zillow_link=self.zillow_link)
 
 class PropertySherifSale(Base):
     __tablename__ = 'SHERIEF_SALE_PROPERTY_TABLE'
@@ -74,6 +76,7 @@ class PropertySherifSale(Base):
     created_at: DateTime = Column(DateTime, nullable=False, default=datetime.now)
     created_by: str = Column(String(200), nullable=False, default="SherifSale")
     SHERIEF_SALE_CHILD_ID: int = Column(Numeric, nullable=False)
+    zillow_link: str = Column(String(300), nullable=True)
 
     @staticmethod
     def save_sherif_sale_to_db(property: Property) -> int:
@@ -92,13 +95,16 @@ class PropertySherifSale(Base):
             print(f'Error committing to the db: {e}')
             raise e
     @staticmethod
-    def save_all_sherif_sales_to_db(properties: List[Property]) -> None:
+    def save_all_sherif_sales_to_db(properties: List[Union[Property, 'PropertySherifSale']] ) -> None:
         try:
             # Iterate over the list of Property objects
             for property in properties:
-                # Convert and add each Property to the session
-                property_sherif_sale = property.convert_property_sherif_sale_alchemy()
-                session.add(property_sherif_sale)
+                if isinstance(property, PropertySherifSale):
+                    session.add(property)
+                else:
+                    # Convert and add each Property to the session
+                    property_sherif_sale = property.convert_property_sherif_sale_alchemy()
+                    session.add(property_sherif_sale)
 
             # Commit the session to persist all objects in the database
             session.commit()
@@ -107,4 +113,13 @@ class PropertySherifSale(Base):
             # Rollback in case of any error
             session.rollback()
             print(f'Error committing the list to the db: {e}')
+            raise e
+    @staticmethod
+    def get_all_by_tract(count: str) -> List['PropertySherifSale']:
+        try:
+            properties = session.query(PropertySherifSale).filter(PropertySherifSale.tracts == count
+                                                                  ).all()
+            return properties
+        except Exception as e:
+            print(f'Error fetching properties: {e}')
             raise e

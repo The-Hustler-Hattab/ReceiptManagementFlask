@@ -48,6 +48,11 @@ class AzureCustomModel:
                 property.parcel_tax_id = item.value.get("ParcelTaxId").value[:254] if item.value.get("ParcelTaxId") and item.value.get("ParcelTaxId").value else ""
                 property.comments = item.value.get("Comments").value[:254] if item.value.get("Comments") and item.value.get("Comments").value else ""
                 property.SHERIEF_SALE_CHILD_ID = child_id
+                if property.tracts == "1":
+                    address = property.property_address.replace(" ", "-")
+                    zillow_link = f"https://www.zillow.com/homes/{address}_rb/"
+                    property.zillow_link = zillow_link
+
                 property_list.append(property)
             return property_list
         except Exception as e:

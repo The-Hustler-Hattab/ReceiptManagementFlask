@@ -5,11 +5,8 @@ from flask import jsonify, Response, request
 from werkzeug.datastructures import FileStorage
 
 from app import app, Constants
-from app.model.db.receipts_alchemy import Receipts, Receipt
-from app.service.process_receipts import AzureFormRecognizer
 from app.service.sherief_sale_service import SheriffSaleService
 from app.util.date_util import DateUtil
-from app.util.jwt_utls import verify_jwt, verify_token_and_role, get_decoded_token, get_full_name
 
 
 @app.route('/process-sherif-sale-master-pdf', methods=['POST'])
@@ -64,3 +61,22 @@ def process_sherif_sale_master_pdf() -> Tuple[Dict[str, str], int]:
         return SheriffSaleService.process_master_pdf(pdf_file, sherif_sale_date)
     else:
         return {'message': 'Invalid file format. Only PDF files are allowed'}, 400
+
+
+@app.route('/enrich-sherif-sale', methods=['POST'])
+# @verify_jwt
+def enrich_sherif_sale() -> Tuple[Dict[str, str], int]:
+    """
+     Enrich Sherif sale PDF Endpoint
+     ---
+     tags:
+       - Sherif-Controller
+
+     responses:
+       200:
+         description: OK enriched successfully.
+       400:
+         description: Bad Request there was an error enriching data.
+     """
+
+    return SheriffSaleService.enrich_sherif_sale();

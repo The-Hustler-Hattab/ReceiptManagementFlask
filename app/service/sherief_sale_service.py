@@ -36,7 +36,8 @@ class SheriffSaleService:
             )
             child_id = SherifSaleChild.save_sherif_sale_to_db(sherif_sales_child_model)
             sherif_sales_child_model.id = child_id
-            property_list: list[Property] = AzureCustomModel.extract_sherif_sale_details(sherif_sales_child_model.file_path,child_id)
+            property_list: list[Property] = AzureCustomModel.extract_sherif_sale_details(
+                sherif_sales_child_model.file_path, child_id)
             PropertySherifSale.save_all_sherif_sales_to_db(property_list)
 
         return {'message': 'File processed successfully'}, 200
@@ -89,3 +90,17 @@ class SheriffSaleService:
         )
 
         return file_name, sherif_sales
+
+    @staticmethod
+    def enrich_sherif_sale():
+        property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_by_tract("1")
+        print(f"property list: {property_list}")
+        new_property_list: list[Property] = []
+        for property in property_list:
+            address = property.property_address.replace(" ", "-")
+            zillow_link = f"https://www.zillow.com/homes/{address}_rb/"
+            property.zillow_link = zillow_link
+            new_property_list.append(property)
+        PropertySherifSale.save_all_sherif_sales_to_db(new_property_list)
+
+        return {"message": "enriched data successfully"}, 200
