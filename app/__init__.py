@@ -19,7 +19,7 @@ class Constants:
     BLOB_CONNECTION_STRING = 'BLOB_CONNECTION_STRING'
     ADMIN_GROUP = 'ADMIN_GROUP'
     BLOB_CONTAINER_SHERIF_SALE='BLOB_CONTAINER_SHERIF_SALE'
-    # QUEUE_SHERIF_SALE='QUEUE_SHERIF_SALE'
+    QUEUE_SHERIF_SALE='QUEUE_SHERIF_SALE'
     AZURE_FORM_RECOGNIZER_MODEL_ID = 'AZURE_FORM_RECOGNIZER_MODEL_ID'
 
 
@@ -39,7 +39,7 @@ app.config[Constants.AZURE_FORM_RECOGNIZER_KEY] = os.getenv(Constants.AZURE_FORM
 app.config[Constants.BLOB_CONTAINER_NAME] = os.getenv(Constants.BLOB_CONTAINER_NAME)
 app.config[Constants.BLOB_CONNECTION_STRING] = os.getenv(Constants.BLOB_CONNECTION_STRING)
 app.config[Constants.BLOB_CONTAINER_SHERIF_SALE] = os.getenv(Constants.BLOB_CONTAINER_SHERIF_SALE)
-# app.config[Constants.QUEUE_SHERIF_SALE] = os.getenv(Constants.QUEUE_SHERIF_SALE)
+app.config[Constants.QUEUE_SHERIF_SALE] = os.getenv(Constants.QUEUE_SHERIF_SALE)
 app.config[Constants.ADMIN_GROUP] = os.getenv(Constants.ADMIN_GROUP)
 app.config[Constants.AZURE_FORM_RECOGNIZER_MODEL_ID] = os.getenv(Constants.AZURE_FORM_RECOGNIZER_MODEL_ID)
 

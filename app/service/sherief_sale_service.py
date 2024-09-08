@@ -7,9 +7,10 @@ from werkzeug.datastructures import FileStorage
 from app.model.db.sherief_sale_child_table_alchemy import SherifSaleChild, SherifSalesChild
 from app.model.db.sherief_sale_master_table_alchemy import SherifSales, SherifSale
 from app.model.db.sherif_sale_properties_alchemy import Property, PropertySherifSale
+from app.model.generic.sheriff_sale_detail_model import SheriffSaleDetailModel
 from app.service.azure_blob import AzureBlobStorage, BlobType
-# from app.service.queue_service import QueueService
-from app.service.sherief_sale_ai_service import AzureCustomModel
+from app.service.queue_service import QueueService
+
 from app.util.data_manipulation import DataManipulation
 from app.util.date_util import DateUtil
 from app.util.pdf_util import PdfUtil
@@ -36,9 +37,12 @@ class SheriffSaleService:
             )
             child_id = SherifSaleChild.save_sherif_sale_to_db(sherif_sales_child_model)
             sherif_sales_child_model.id = child_id
-            property_list: list[Property] = AzureCustomModel.extract_sherif_sale_details(
-                sherif_sales_child_model.file_path, child_id)
-            PropertySherifSale.save_all_sherif_sales_to_db(property_list)
+            # push the important details to the queue
+            sherif_sales_details:SheriffSaleDetailModel = SheriffSaleDetailModel(file_path=sherif_sales.file_path,sheriff_sale_child_id=child_id)
+            QueueService.push_message(sherif_sales_details.to_json())
+
+            # property_list: list[Property] = AzureCustomModel.extract_sherif_sale_details(sherif_sales_details)
+            # PropertySherifSale.save_all_sherif_sales_to_db(property_list)
 
         return {'message': 'File processed successfully'}, 200
 
