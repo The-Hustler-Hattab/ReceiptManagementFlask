@@ -29,6 +29,12 @@ class ZillowModel:
     schools: list['SchoolModel']  # schools
 
 
+    def get_schools_as_string(self)->str:
+        return '\n'.join([str(school) for school in self.schools])
+
+    def get_events_as_string(self)->str:
+        return '\n'.join([str(event) for event in self.events])
+
 class SchoolModel:
     name: str
     rating: int

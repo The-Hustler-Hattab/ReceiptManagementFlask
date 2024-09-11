@@ -3,17 +3,38 @@ import json
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium_stealth import stealth
 
 from app.model.generic.zillow_model import ZillowModel, SchoolModel
 import re
 
-# Initialize the Chrome WebDriver
 chrome_options = Options()
 chrome_options.add_experimental_option("detach", True)
-
+chrome_options.add_argument(
+    "user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+)
+chrome_options.add_extension("F:\chrome\extenstion\stealth\OFFPHOBPEDOHKENCKINEJACPJODCHGMN_2_1_0_0.crx")
 service = Service()
 driver = webdriver.Chrome(service=service, options=chrome_options)
+# Apply Selenium Stealth
+stealth(driver,
+        languages=["en-US", "en"],
+        vendor="Google Inc.",
+        platform="Linux",
+        webgl_vendor="Intel Inc.",
+        renderer="Intel Iris OpenGL Engine",
+        fix_hairline=True,
+        )
+# Execute a JavaScript script to force override navigator properties
+driver.execute_script("""
+    Object.defineProperty(navigator, 'platform', {
+        get: function () { return 'Linux'; }
+    });
+""")
+
+
 class ZillowScraper:
+    # Initialize the Chrome WebDriver
 
     @staticmethod
     def clean_zillow_property_data(zillow_property_data: str)-> ZillowModel:
@@ -44,12 +65,12 @@ class ZillowScraper:
             sqft_pattern, zillow_property_data) else ""
 
         # Bedrooms
-        bedrooms_pattern = r'Bedrooms:\s*(\d+)(?=<)'
+        bedrooms_pattern = r'Bedrooms:\s*([^<]+)'
         match = re.search(bedrooms_pattern, zillow_property_data)
         zillow_model.bedrooms = match.group(1) if match else ""
 
         # Bathrooms
-        bathrooms_pattern = r'Bathrooms:\s*(\d+)(?=<)'
+        bathrooms_pattern = r'Bathrooms:\s*([^<]+)'
         match = re.search(bathrooms_pattern, zillow_property_data)
         zillow_model.bathrooms = match.group(1) if match else ""
 
@@ -142,42 +163,50 @@ class ZillowScraper:
     def close_driver():
         driver.quit()
 
+    @staticmethod
+    def get_zillow_property_data(zillow_link: str)-> ZillowModel:
+        uncleaned_data = ZillowScraper.get_zillow_property_uncleaned_data(zillow_link)
 
-# uncleaned_data =ZillowScraper.get_zillow_property_uncleaned_data("https://www.zillow.com/homes/134-Marwood-Dr-Pittsburgh,-PA-15241_rb/")
-# uncleaned_data =ZillowScraper.get_zillow_property_uncleaned_data("https://www.zillow.com/homes/506-Oak-Ave-Elizabeth,-PA-15037_rb/")
-uncleaned_data =ZillowScraper.get_zillow_property_uncleaned_data("https://www.zillow.com/homes/88-Oakwood-Rd-Pittsburgh-PA-15205_rb/")
+        return ZillowScraper.clean_zillow_property_data(uncleaned_data)
 
-cleaned_data = ZillowScraper.clean_zillow_property_data(uncleaned_data)
+
+# driver.get("https://www.whatismybrowser.com/#google_vignette")
+# # uncleaned_data =ZillowScraper.get_zillow_property_uncleaned_data("https://www.zillow.com/homes/134-Marwood-Dr-Pittsburgh,-PA-15241_rb/")
+# # uncleaned_data =ZillowScraper.get_zillow_property_uncleaned_data("https://www.zillow.com/homes/506-Oak-Ave-Elizabeth,-PA-15037_rb/")
+# uncleaned_data =ZillowScraper.get_zillow_property_uncleaned_data("https://www.zillow.com/homes/88-Oakwood-Rd-Pittsburgh-PA-15205_rb/")
+# uncleaned_data =ZillowScraper.get_zillow_property_uncleaned_data("https://www.zillow.com/homes/1010-MCCLURE-ST-HOMESTEAD,-PA-15120_rb/")
+#
+#
+#
+# cleaned_data = ZillowScraper.clean_zillow_property_data(uncleaned_data)
 # print(uncleaned_data)
-print(f'zestimate:  {cleaned_data.zestimate}')
-print(f'zestibuck:  {cleaned_data.zestibuck}')
-print(f'yrblt:  {cleaned_data.yrblt}')
-print(f'lot_size:  {cleaned_data.lot_size}')
-print(f'sqftrange:  {cleaned_data.sqftrange}')
-print(f'sqft:  {cleaned_data.sqft}')
-print(f'bedrooms:  {cleaned_data.bedrooms}')
-print(f'bathrooms:  {cleaned_data.bathrooms}')
-print(f'homeType:  {cleaned_data.homeType}')
-print(f'heating:  {cleaned_data.heating}')
-print(f'cooling:  {cleaned_data.cooling}')
-print(f'parking:  {cleaned_data.parking}')
-print(f'exterior:  {cleaned_data.exterior}')
-print(f'parcel_num:  {cleaned_data.parcel_num}')
-print(f'construction_materials:  {cleaned_data.construction_materials}')
-print(f'roof:  {cleaned_data.roof}')
+# print(f'zestimate:  {cleaned_data.zestimate}')
+# print(f'zestibuck:  {cleaned_data.zestibuck}')
+# print(f'yrblt:  {cleaned_data.yrblt}')
+# print(f'lot_size:  {cleaned_data.lot_size}')
+# print(f'sqftrange:  {cleaned_data.sqftrange}')
+# print(f'sqft:  {cleaned_data.sqft}')
+# print(f'bedrooms:  {cleaned_data.bedrooms}')
+# print(f'bathrooms:  {cleaned_data.bathrooms}')
+# print(f'homeType:  {cleaned_data.homeType}')
+# print(f'heating:  {cleaned_data.heating}')
+# print(f'cooling:  {cleaned_data.cooling}')
+# print(f'parking:  {cleaned_data.parking}')
+# print(f'exterior:  {cleaned_data.exterior}')
+# print(f'parcel_num:  {cleaned_data.parcel_num}')
+# print(f'construction_materials:  {cleaned_data.construction_materials}')
+# print(f'roof:  {cleaned_data.roof}')
+#
+# print(f'street:  {cleaned_data.street}')
+# print(f'city:  {cleaned_data.city}')
+# print(f'state:  {cleaned_data.state}')
+# print(f'zip:  {cleaned_data.zip}')
+# print(f'county:  {cleaned_data.county}')
+#
+# print(cleaned_data.get_events_as_string())
+# print(cleaned_data.get_schools_as_string())
 
-print(f'street:  {cleaned_data.street}')
-print(f'city:  {cleaned_data.city}')
-print(f'state:  {cleaned_data.state}')
-print(f'zip:  {cleaned_data.zip}')
-print(f'county:  {cleaned_data.county}')
 
-print(f'events:  {cleaned_data.events}')
-
-
-
-for school in cleaned_data.schools:
-    print(f'{school}')
 
 
 

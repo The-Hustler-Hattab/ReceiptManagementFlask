@@ -10,6 +10,7 @@ from app.model.db.sherif_sale_properties_alchemy import Property, PropertySherif
 from app.model.generic.sheriff_sale_detail_model import SheriffSaleDetailModel
 from app.service.azure_blob import AzureBlobStorage, BlobType
 from app.service.queue_service import QueueService
+from app.service.selenium_service import ZillowScraper
 
 from app.util.data_manipulation import DataManipulation
 from app.util.date_util import DateUtil
@@ -101,10 +102,26 @@ class SheriffSaleService:
         print(f"property list: {property_list}")
         new_property_list: list[Property] = []
         for property in property_list:
+            if property.property_address is None:
+                continue
             address = property.property_address.replace(" ", "-")
             zillow_link = f"https://www.zillow.com/homes/{address}_rb/"
             property.zillow_link = zillow_link
             new_property_list.append(property)
         PropertySherifSale.save_all_sherif_sales_to_db(new_property_list)
+
+        return {"message": "enriched data successfully"}, 200
+
+
+    @staticmethod
+    def enrich_zillow_data():
+        property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_zillow_data_is_missing("1")
+        print(f"property list: {property_list}")
+        # new_property_list: list[Property] = []
+        for property in property_list:
+            zillow_model = ZillowScraper.get_zillow_property_data(property.zillow_link)
+            property.add_zillow_data(zillow_model)
+            PropertySherifSale.save_sherif_sale_to_db(property)
+            # PropertySherifSale.save_all_sherif_sales_to_db(new_property_list)
 
         return {"message": "enriched data successfully"}, 200
