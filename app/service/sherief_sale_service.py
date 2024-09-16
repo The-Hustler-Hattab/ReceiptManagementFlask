@@ -10,7 +10,8 @@ from app.model.db.sherif_sale_properties_alchemy import Property, PropertySherif
 from app.model.generic.sheriff_sale_detail_model import SheriffSaleDetailModel
 from app.service.azure_blob import AzureBlobStorage, BlobType
 from app.service.queue_service import QueueService
-from app.service.selenium_service import ZillowScraper
+from app.service.web_scraper import WebScrapper
+# from app.service.selenium_web_scraper_service import ZillowScraper
 
 from app.util.data_manipulation import DataManipulation
 from app.util.date_util import DateUtil
@@ -113,15 +114,38 @@ class SheriffSaleService:
         return {"message": "enriched data successfully"}, 200
 
 
+    # @staticmethod
+    # def enrich_zillow_data():
+    #     property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_zillow_data_is_missing("1")
+    #     print(f"property list: {property_list}")
+    #     # new_property_list: list[Property] = []
+    #     for property in property_list:
+    #         zillow_model = ZillowScraper.get_zillow_property_data(property.zillow_link)
+    #         property.add_zillow_data(zillow_model)
+    #         PropertySherifSale.save_sherif_sale_to_db(property)
+    #         # PropertySherifSale.save_all_sherif_sales_to_db(new_property_list)
+    #
+    #     return {"message": "enriched data successfully"}, 200
+
+
     @staticmethod
-    def enrich_zillow_data():
+    def enrich_zillow_data_web_scrapper():
         property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_zillow_data_is_missing("1")
         print(f"property list: {property_list}")
-        # new_property_list: list[Property] = []
-        for property in property_list:
-            zillow_model = ZillowScraper.get_zillow_property_data(property.zillow_link)
-            property.add_zillow_data(zillow_model)
-            PropertySherifSale.save_sherif_sale_to_db(property)
-            # PropertySherifSale.save_all_sherif_sales_to_db(new_property_list)
+        for i, property in enumerate(property_list):
+            # Handle the first item differently
+            if i == 0:
+                print("Handling the first property differently")
+                # Custom logic for the first property
+                WebScrapper.start_browser(property.zillow_link)
+                zillow = WebScrapper.start_web_scraping_routine()
+                property.add_zillow_data(zillow)
+                # Maybe a different way to save the first property
+                PropertySherifSale.save_sherif_sale_to_db(property)
+            else:
+                # Regular handling for the rest of the properties
+                zillow_model = WebScrapper.continue_web_scraping_routine(property.zillow_link)
+                property.add_zillow_data(zillow_model)
+                PropertySherifSale.save_sherif_sale_to_db(property)
 
         return {"message": "enriched data successfully"}, 200

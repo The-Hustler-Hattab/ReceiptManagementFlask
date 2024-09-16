@@ -57,3 +57,29 @@ class SchoolModel:
 
     def __str__(self):
         return f"School: {self.name}, Rating: {self.rating}, Level: {self.level}, Grades: {self.grades}, Type: {self.type}"
+
+class EventModel:
+    date: str
+    price: int
+    pricePerSquareFoot: int
+    event: str
+    source: str
+
+    def __init__(self, date: str, price: int, price_per_square_foot: int, event: str, source: str):
+        self.date = date
+        self.price = price
+        self.pricePerSquareFoot = price_per_square_foot
+        self.event = event
+        self.source = source
+
+    @classmethod
+    def from_json(cls, json_data: str):
+        data = json.loads(json_data)
+        return [
+            cls(item['date'], item['price'], item['pricePerSquareFoot'], item['event'], item['source'])
+            for item in data
+        ]
+
+    def __str__(self):
+        return (f"EventModel(date='{self.date}', price={self.price}, "
+                f"pricePerSquareFoot={self.pricePerSquareFoot}, event='{self.event}', source='{self.source}')")
