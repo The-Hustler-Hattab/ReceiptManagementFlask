@@ -15,7 +15,7 @@ class WebScrapper:
     def start_browser(url: str) -> None:
         command = f"chrome {url} --new-window --start-fullscreen"
         subprocess.run(command, shell=True)
-        time.sleep(1)
+        time.sleep(5)
 
 
     @staticmethod
@@ -29,17 +29,22 @@ class WebScrapper:
         # print(clipboard_content)
         pyautogui.hotkey('ctrl', 'w')
         WebScrapper.move_to_search_bar()
-        pyautogui.leftClick()
-        pyautogui.leftClick()
-        pyautogui.leftClick()
+        WebScrapper.triple_click()
         return WebScrapper.clean_zillow_property_data(clipboard_content)
+
+    @staticmethod
+    def triple_click():
+        pyautogui.leftClick()
+        pyautogui.leftClick()
+        pyautogui.leftClick()
+
 
     @staticmethod
     def copy_content_from_web_page() -> str:
         pyautogui.hotkey('ctrl', 'u')
-        time.sleep(1)
+        time.sleep(1.5)
         pyautogui.hotkey('ctrl', 'a')
-        time.sleep(.1)
+        time.sleep(.5)
         pyautogui.hotkey('ctrl', 'c')
         # Get the current content of the clipboard
         clipboard_content = pyperclip.paste()
@@ -47,14 +52,13 @@ class WebScrapper:
 
     @staticmethod
     def continue_web_scraping_routine(url: str) -> ZillowModel:
-        pyautogui.write(url)  # 'interval' controls typing speed
+        pyautogui.write(url)
         pyautogui.press('enter')
-        time.sleep(random.uniform(4, 6))
+        time.sleep(random.uniform(5, 7))
         clipboard_content = WebScrapper.copy_content_from_web_page()
         # print(clipboard_content)
         pyautogui.hotkey('ctrl', 'w')
-        pyautogui.leftClick()
-        pyautogui.leftClick()
+        WebScrapper.triple_click()
         pyautogui.leftClick()
         return WebScrapper.clean_zillow_property_data(clipboard_content)
 
@@ -227,7 +231,47 @@ class WebScrapper:
     def move_to_middle_of_screen():
         pyautogui.moveTo(-1500, 500, duration=.5)  # middle of the screen
 
-#
+
+    # below is the automation for allegheny county website
+    # assume 100% zoom
+    @staticmethod
+    def move_to_case_number_search_bar():
+        pyautogui.moveTo(-1500, 650, duration=.5)  # middle of the screen
+
+
+    @staticmethod
+    def move_to_amount_in_dispute():
+        pyautogui.moveTo(-1705, 1035, duration=.5)  # middle of the screen
+
+    @staticmethod
+    def get_amount_in_dispute(case_number: str) -> str:
+        """
+        Assume 100% zoom on allegheny county website
+        :param case_number:
+        :return:
+        """
+        case_number = case_number.strip()
+        WebScrapper.move_to_case_number_search_bar()
+        WebScrapper.triple_click()
+        pyautogui.write(case_number)
+        pyautogui.press('enter')
+        time.sleep(3)
+        WebScrapper.move_to_amount_in_dispute()
+        WebScrapper.triple_click()
+        pyautogui.hotkey('ctrl', 'c')
+        # Get the current content of the clipboard
+        clipboard_content: str = pyperclip.paste()
+        if clipboard_content.startswith("$"):
+            clipboard_content = clipboard_content[1:]
+        clipboard_content = clipboard_content.replace(" ", "")
+        clipboard_content = clipboard_content.replace("\n", "")
+        clipboard_content = clipboard_content.strip()
+        print(clipboard_content)
+
+        return clipboard_content
+
+# WebScrapper.get_amount_in_dispute("MG-23-000726")
+# WebScrapper.get_amount_in_dispute("MG-23-000717")
 # # WebScrapper.start_browser("https://www.zillow.com/homes/465-BAIRDFORD-RD-BAIRDFORD,-PA-15006_rb/")
 # zillow = WebScrapper.start_web_scraping_routine()
 #

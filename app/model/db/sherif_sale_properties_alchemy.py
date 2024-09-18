@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Union
 
-from sqlalchemy import Column, Numeric, String, DateTime, Text
+from sqlalchemy import Column, Numeric, String, DateTime, Text, func, text
 
 from app.model.db.receipts_alchemy import Base, session
 from app.model.generic.zillow_model import ZillowModel
@@ -47,8 +47,9 @@ class Property:
     state: str
     zip: str
     county: str
+    amount_in_dispute: str
 
-    def __init__(self, SHERIEF_SALE_CHILD_ID: int, sale: str = "", case_number: str = "", sale_type: str = "",
+    def __init__(self, SHERIEF_SALE_CHILD_ID: int = None, sale: str = "", case_number: str = "", sale_type: str = "",
                  status: str = "",
                  tracts: str = "", cost_tax_bid: str = "", plaintiff: str = "",
                  attorney_for_plaintiff: str = "", defendant: str = "", property_address: str = "",
@@ -57,7 +58,7 @@ class Property:
                  lot_size: str = "", square_foot_range: str = "", square_foot: str = "", bedrooms: str = "",
                  bathrooms: str = "", home_type: str = "", heating: str = "", cooling: str = "", parking: str = "",
                  exterior: str = "", parcel_num: str = "", construction_materials: str = "", roof: str = "",
-                 street: str = "", city: str = "", state: str = "", zip: str = "", county: str = ""):
+                 street: str = "", city: str = "", state: str = "", zip: str = "", county: str = "", amount_in_dispute: str = ""):
         self.sale = sale
         self.case_number = case_number
         self.sale_type = sale_type
@@ -96,6 +97,7 @@ class Property:
         self.state = state
         self.zip = zip
         self.county = county
+        self.amount_in_dispute: str= amount_in_dispute
 
     def __str__(self):
         return (f"Property(sale={self.sale}, case_number={self.case_number}, sale_type={self.sale_type}, "
@@ -119,7 +121,7 @@ class Property:
                                   parking=self.parking, exterior=self.exterior, parcel_num=self.parcel_num,
                                   construction_materials=self.construction_materials, roof=self.roof,
                                   street=self.street, city=self.city, state=self.state, zip=self.zip,
-                                  county=self.county)
+                                  county=self.county, amount_in_dispute=self.amount_in_dispute)
 
     def add_zillow_data(self, zillow_data: ZillowModel) -> None:
         self.zestimate = zillow_data.zestimate
@@ -192,6 +194,7 @@ class PropertySherifSale(Base):
     state: str = Column(String(300), nullable=True)
     zip: str = Column(String(300), nullable=True)
     county: str = Column(String(300), nullable=True)
+    amount_in_dispute: str = Column(String(50), nullable=True)
 
     def add_zillow_data(self, zillow_data: ZillowModel) -> None:
         self.zestimate = zillow_data.zestimate
@@ -284,15 +287,89 @@ class PropertySherifSale(Base):
             raise e
 
     @staticmethod
-    def get_all_where_zillow_data_is_missing(count: str) -> List['PropertySherifSale']:
+    def get_all_where_zillow_data_is_missing(count: str, sale_type: str) -> List['PropertySherifSale']:
         try:
             properties = session.query(PropertySherifSale).filter(
                 PropertySherifSale.tracts == count,
-                PropertySherifSale.street == None,  # Check where street is NULL
+                PropertySherifSale.street == "",  # Check where street is NULL
+                PropertySherifSale.state == "",  # Check where street is NULL
                 PropertySherifSale.property_address != "",
-                (PropertySherifSale.zillow_link != None) | (PropertySherifSale.zillow_link != "")
+                (PropertySherifSale.zillow_link != None) | (PropertySherifSale.zillow_link != ""),
+                PropertySherifSale.sale_type == sale_type,
+                PropertySherifSale.created_at >= datetime(2024, 9, 10)
+
             ).all()
             return properties
         except Exception as e:
             print(f'Error fetching properties: {e}')
             raise e
+
+    @staticmethod
+    def get_all_where_ammount_in_dispute_is_missing( sale_type: str) -> List['PropertySherifSale']:
+        try:
+            properties = session.query(PropertySherifSale).filter(
+                (PropertySherifSale.amount_in_dispute.is_(None)) | (PropertySherifSale.amount_in_dispute != ""),
+                PropertySherifSale.sale_type == sale_type,
+                PropertySherifSale.created_at >= datetime(2024, 9, 10)
+
+            ).all()
+            return properties
+        except Exception as e:
+            print(f'Error fetching properties: {e}')
+            raise e
+
+    @staticmethod
+    def update_zillow_data_in_duplicates():
+        try:
+            # Define the query
+            query = """
+            UPDATE SHERIEF_SALE_PROPERTY_TABLE t1
+            JOIN (
+                -- Subquery to find duplicate case_number and get Zillow data from one of them
+                SELECT t1.id AS id_with_data, t2.id AS id_without_data,
+                       t1.ZILLOW_LINK, t1.ZESTIMATE, t1.ZESTIBUCK, t1.SQUARE_FOOT, t1.BEDROOMS, t1.BATHROOMS,
+                       t1.HOME_TYPE, t1.HEATING, t1.COOLING, t1.PARKING, t1.EXTERIOR, t1.CONSTRUCTION_MATERIALS, t1.ROOF,
+                       t1.STREET, t1.CITY, t1.STATE, t1.ZIP, t1.COUNTY
+                FROM SHERIEF_SALE_PROPERTY_TABLE t1
+                JOIN SHERIEF_SALE_PROPERTY_TABLE t2
+                    ON t1.case_number = t2.case_number
+                    AND t1.id != t2.id
+                -- Ensure t1 has Zillow data
+                WHERE (t1.ZILLOW_LINK IS NOT NULL OR t1.STATE IS NOT NULL OR t1.ZIP IS NOT NULL)
+                -- Ensure t2 does not have Zillow data
+                AND (t2.ZILLOW_LINK IS NULL OR t2.ZESTIMATE IS NULL OR t2.ZESTIBUCK IS NULL)
+            ) AS t2
+            -- Update the records without Zillow data
+            ON t1.id = t2.id_without_data
+            SET 
+                t1.ZILLOW_LINK = t2.ZILLOW_LINK,
+                t1.ZESTIMATE = t2.ZESTIMATE,
+                t1.ZESTIBUCK = t2.ZESTIBUCK,
+                t1.SQUARE_FOOT = t2.SQUARE_FOOT,
+                t1.BEDROOMS = t2.BEDROOMS,
+                t1.BATHROOMS = t2.BATHROOMS,
+                t1.HOME_TYPE = t2.HOME_TYPE,
+                t1.HEATING = t2.HEATING,
+                t1.COOLING = t2.COOLING,
+                t1.PARKING = t2.PARKING,
+                t1.EXTERIOR = t2.EXTERIOR,
+                t1.CONSTRUCTION_MATERIALS = t2.CONSTRUCTION_MATERIALS,
+                t1.ROOF = t2.ROOF,
+                t1.STREET = t2.STREET,
+                t1.CITY = t2.CITY,
+                t1.STATE = t2.STATE,
+                t1.ZIP = t2.ZIP,
+                t1.COUNTY = t2.COUNTY;
+            """
+
+            # Execute the query
+            session.execute(text(query))
+            session.commit()  # Commit the changes
+            print("Zillow data updated in duplicate records.")
+
+        except Exception as e:
+            session.rollback()  # Rollback in case of error
+            print(f"An error occurred: {e}")
+
+        finally:
+            session.close()  # Close the session
