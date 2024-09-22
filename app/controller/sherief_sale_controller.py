@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Tuple, Dict, IO
 
 from flask import jsonify, Response, request
@@ -7,10 +7,11 @@ from werkzeug.datastructures import FileStorage
 from app import app, Constants
 from app.service.sherief_sale_service import SheriffSaleService
 from app.util.date_util import DateUtil
+from app.util.jwt_utls import verify_jwt
 
 
 @app.route('/process-sherif-sale-master-pdf', methods=['POST'])
-# @verify_jwt
+@verify_jwt
 def process_sherif_sale_master_pdf() -> Tuple[Dict[str, str], int]:
     """
      Process Sherif sale PDF Endpoint
@@ -64,7 +65,7 @@ def process_sherif_sale_master_pdf() -> Tuple[Dict[str, str], int]:
 
 
 @app.route('/enrich-sherif-sale', methods=['POST'])
-# @verify_jwt
+@verify_jwt
 def enrich_sherif_sale() -> Tuple[Dict[str, str], int]:
     """
      Enrich Sherif sale PDF Endpoint
@@ -80,3 +81,49 @@ def enrich_sherif_sale() -> Tuple[Dict[str, str], int]:
      """
 
     return SheriffSaleService.enrich_sherif_sale();
+
+
+@app.route('/sheriff-sale-data-between', methods=['GET'])
+@verify_jwt
+def get_sheriff_data_between():
+    """
+    Get sheriff data between two dates
+    ---
+    tags:
+      - Sherif-Controller
+    parameters:
+      - name: start_date
+        in: query
+        type: string
+        required: true
+        description: YYYY-MM-DD
+      - name: end_date
+        in: query
+        type: string
+        required: true
+        description: YYYY-MM-DD
+
+    responses:
+      200:
+        description: data pulled successfully
+      400:
+        description: Bad request
+      500:
+        description: Internal server error
+    """
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    print(start_date)
+    print(end_date)
+
+    try:
+        # Parse the date strings to datetime objects
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
+
+        print(start_date)
+        print(end_date)
+
+        return SheriffSaleService.get_sheriff_sale_data_between_two_dates(start_date, end_date)
+    except Exception as e:
+        raise e

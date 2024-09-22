@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 
-from sqlalchemy import Column, Numeric, String, DateTime, text, select, not_
+from sqlalchemy import Column, Numeric, String, DateTime, text, select, not_, ForeignKey
+from sqlalchemy.orm import relationship
 
 from app.model.db.receipts_alchemy import Base, session
 from app.model.db.sherif_sale_properties_alchemy import PropertySherifSale
@@ -51,17 +52,13 @@ class SherifSaleChild(Base):
     created_at: DateTime = Column(DateTime, nullable=False, default=datetime.now)
     created_by: str = Column(String(200), nullable=False, default="SherifSale")
     SHERIFF_SALE_DATE: DateTime = Column(DateTime, nullable=False)
-    SHERIEF_SALE_MASTER_ID: int = Column(Numeric, nullable=False)
+    SHERIEF_SALE_MASTER_ID: int = Column(Numeric, ForeignKey('SHERIEF_SALE_MASTER_TABLE.id'), nullable=False)
 
-    # def __init__(self, id, file_hash, file_path, file_name, created_at, created_by, SHERIFF_SALE_DATE, SHERIEF_SALE_MASTER_ID):
-    #     self.id = id
-    #     self.file_hash = file_hash
-    #     self.file_path = file_path
-    #     self.file_name = file_name
-    #     self.created_at = created_at
-    #     self.created_by = created_by
-    #     self.SHERIFF_SALE_DATE = SHERIFF_SALE_DATE
-    #     self.SHERIEF_SALE_MASTER_ID = SHERIEF_SALE_MASTER_ID
+    # Many-to-one relationship with SherifSale
+    sherif_sale = relationship("SherifSale", back_populates="sherif_sale_children")
+
+    # One-to-many relationship with Child
+    sherif_sale_properties = relationship("PropertySherifSale", back_populates="sherif_sale_child")
 
     def __str__(self):
         return (f"SherifSaleChild(id={self.id}, file_hash='{self.file_hash}', file_path='{self.file_path}', "
@@ -71,15 +68,22 @@ class SherifSaleChild(Base):
     def to_dict(self):
         return {
             "id": self.id,
+            "sherif_sale_master_id": self.SHERIEF_SALE_MASTER_ID,
             "file_hash": self.file_hash,
             "file_path": self.file_path,
             "file_name": self.file_name,
-            "created_at": self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at,
+            "created_at": self._serialize_date(self.created_at),
             "created_by": self.created_by,
-            "SHERIFF_SALE_DATE": self.SHERIFF_SALE_DATE.isoformat() if isinstance(self.SHERIFF_SALE_DATE,
-                                                                                  datetime) else self.SHERIFF_SALE_DATE,
-            "SHERIEF_SALE_MASTER_ID": self.SHERIEF_SALE_MASTER_ID
+            "sheriff_sale_date": self._serialize_date(self.SHERIFF_SALE_DATE),
+            "sherif_sale_properties": [child.to_dict() for child in
+                                       self.sherif_sale_properties] if self.sherif_sale_properties else []
         }
+
+    @staticmethod
+    def _serialize_date(value):
+        if isinstance(value, (datetime, date)):
+            return value.isoformat()
+        return value
 
     @staticmethod
     def save_sherif_sale_to_db(sherif_sale: SherifSalesChild) -> int:

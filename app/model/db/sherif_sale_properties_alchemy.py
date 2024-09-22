@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Union
 
-from sqlalchemy import Column, Numeric, String, DateTime, Text, func, text
+from sqlalchemy import Column, Numeric, String, DateTime, Text, func, text, ForeignKey
+from sqlalchemy.orm import relationship
 
 from app.model.db.receipts_alchemy import Base, session
 from app.model.generic.zillow_model import ZillowModel
@@ -168,7 +169,7 @@ class PropertySherifSale(Base):
     comments: str = Column(String(255), nullable=False)
     created_at: DateTime = Column(DateTime, nullable=False, default=datetime.now)
     created_by: str = Column(String(200), nullable=False, default="SherifSale")
-    SHERIEF_SALE_CHILD_ID: int = Column(Numeric, nullable=False)
+    SHERIEF_SALE_CHILD_ID: int = Column(Numeric,ForeignKey('SHERIEF_SALE_CHILD_TABLE.id'), nullable=False)
     zillow_link: str = Column(String(300), nullable=True)
     # Newly added columns
     zestimate: str = Column(String(20), nullable=True)
@@ -196,6 +197,63 @@ class PropertySherifSale(Base):
     county: str = Column(String(300), nullable=True)
     amount_in_dispute: str = Column(String(50), nullable=True)
 
+    # Many-to-one relationship with SherifSale
+    sherif_sale_child = relationship("SherifSaleChild", back_populates="sherif_sale_properties")
+
+    def to_dict(self):
+        """
+        Serializes the PropertySherifSale object into a dictionary.
+        """
+        return {
+            "id": self.id,
+            "sale": self.sale,
+            "case_number": self.case_number,
+            "sale_type": self.sale_type,
+            "status": self.status,
+            "tracts": self.tracts,
+            "cost_tax_bid": self.cost_tax_bid,
+            "plaintiff": self.plaintiff,
+            "attorney_for_plaintiff": self.attorney_for_plaintiff,
+            "defendant": self.defendant,
+            "property_address": self.property_address,
+            "municipality": self.municipality,
+            "parcel_tax_id": self.parcel_tax_id,
+            "comments": self.comments,
+            "created_at": self._serialize_date(self.created_at),
+            "created_by": self.created_by,
+            "SHERIEF_SALE_CHILD_ID": self.SHERIEF_SALE_CHILD_ID,
+            "zillow_link": self.zillow_link,
+            "zestimate": self.zestimate,
+            "zestibuck": self.zestibuck,
+            "events": self.events,
+            "schools": self.schools,
+            "year_built": self.year_built,
+            "lot_size": self.lot_size,
+            "square_foot_range": self.square_foot_range,
+            "square_foot": self.square_foot,
+            "bedrooms": self.bedrooms,
+            "bathrooms": self.bathrooms,
+            "home_type": self.home_type,
+            "heating": self.heating,
+            "cooling": self.cooling,
+            "parking": self.parking,
+            "exterior": self.exterior,
+            "parcel_num": self.parcel_num,
+            "construction_materials": self.construction_materials,
+            "roof": self.roof,
+            "street": self.street,
+            "city": self.city,
+            "state": self.state,
+            "zip": self.zip,
+            "county": self.county,
+            "amount_in_dispute": self.amount_in_dispute
+
+        }
+    @staticmethod
+    def _serialize_date(value):
+        if isinstance(value, (datetime, date)):
+            return value.isoformat()
+        return value
     def add_zillow_data(self, zillow_data: ZillowModel) -> None:
         self.zestimate = zillow_data.zestimate
         self.zestibuck = zillow_data.zestibuck

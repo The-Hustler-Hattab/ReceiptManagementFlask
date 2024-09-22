@@ -42,7 +42,8 @@ class SheriffSaleService:
                 child_id = SherifSaleChild.save_sherif_sale_to_db(sherif_sales_child_model)
                 sherif_sales_child_model.id = child_id
                 # push the important details to the queue
-                sherif_sales_details:SheriffSaleDetailModel = SheriffSaleDetailModel(file_path=sherif_sales.file_path,sheriff_sale_child_id=child_id)
+                sherif_sales_details: SheriffSaleDetailModel = SheriffSaleDetailModel(file_path=sherif_sales.file_path,
+                                                                                      sheriff_sale_child_id=child_id)
                 try:
                     property_list: list[Property] = AzureCustomModel.extract_sherif_sale_details(sherif_sales_details)
 
@@ -65,8 +66,6 @@ class SheriffSaleService:
                 else:
                     print("[-] The exception does not contain the specific string, handling it differently.")
                     raise e
-
-
 
         return {'message': 'File processed successfully'}, 200
 
@@ -135,7 +134,6 @@ class SheriffSaleService:
 
         return {"message": "enriched data successfully"}, 200
 
-
     # @staticmethod
     # def enrich_zillow_data():
     #     property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_zillow_data_is_missing("1")
@@ -149,10 +147,10 @@ class SheriffSaleService:
     #
     #     return {"message": "enriched data successfully"}, 200
 
-
     @staticmethod
     def enrich_zillow_data_web_scrapper():
-        property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_zillow_data_is_missing("1","Real Estate Sale - Mortgage Foreclosure")
+        property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_zillow_data_is_missing("1",
+                                                                                                            "Real Estate Sale - Mortgage Foreclosure")
         print(f"property list: {property_list}")
         for i, property in enumerate(property_list):
             # Handle the first item differently
@@ -172,11 +170,10 @@ class SheriffSaleService:
 
         return {"message": "enriched data successfully"}, 200
 
-
-
     @staticmethod
     def enrich_amount_in_dispute_web_scrapper():
-        property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_ammount_in_dispute_is_missing("Real Estate Sale - Mortgage Foreclosure")
+        property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_ammount_in_dispute_is_missing(
+            "Real Estate Sale - Mortgage Foreclosure")
         print(f"property list: {property_list}")
         for property in property_list:
             if property.case_number is None or property.case_number == "":
@@ -186,5 +183,12 @@ class SheriffSaleService:
             # Maybe a different way to save the first property
             PropertySherifSale.save_sherif_sale_to_db(property)
 
-
         return {"message": "enriched data successfully"}, 200
+
+    @staticmethod
+    def get_sheriff_sale_data_between_two_dates(start_date: datetime, end_date: datetime) -> Tuple[Dict[str, str], int]:
+        sheriff_sale_data: list = SherifSale.get_sherif_sales_between_dates(start_date, end_date)
+        # Serialize each instance to a dictionary
+        sherif_sales_list = [sherif_sale.to_dict() for sherif_sale in sheriff_sale_data]
+
+        return {"message": "pulled data successfully", "sheriff_data": sherif_sales_list}, 200

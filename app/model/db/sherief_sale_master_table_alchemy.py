@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 
 from sqlalchemy import Column, Numeric, String, DateTime, insert
+from sqlalchemy.orm import relationship
 
 from app.model.db.receipts_alchemy import Base, session
 
@@ -40,6 +41,27 @@ class SherifSale(Base):
     created_by: str = Column(String(200), nullable=False, default="SherifSale")
     SHERIFF_SALE_DATE: DateTime = Column(DateTime, nullable=False)
 
+    # One-to-many relationship with Child
+    sherif_sale_children = relationship("SherifSaleChild", back_populates="sherif_sale")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "file_hash": self.file_hash,
+            "file_path": self.file_path,
+            "file_name": self.file_name,
+            "pages_size": self.pages_size,
+            "created_at": self._serialize_date(self.created_at),
+            "created_by": self.created_by,
+            "sheriff_sale_date": self._serialize_date(self.SHERIFF_SALE_DATE),
+            "sherif_sale_children": [child.to_dict() for child in self.sherif_sale_children] if self.sherif_sale_children else []
+        }
+
+    @staticmethod
+    def _serialize_date(value):
+        if isinstance(value, (datetime, date)):
+            return value.isoformat()
+        return value
     @staticmethod
     def save_sherif_sale_to_db(sherif_sale: SherifSales) -> int:
         try:
@@ -57,4 +79,35 @@ class SherifSale(Base):
             print(f'Error committing to the db: {e}')
             raise e
 
+    @staticmethod
+    def get_all_sherif_sales() -> list:
+        """
+        Queries the database for all SherifSale records and prints them in JSON format.
 
+        :param session: SQLAlchemy session object
+        """
+        try:
+            # Query all SherifSale instances
+            sherif_sales = session.query(SherifSale).all()
+
+            return sherif_sales
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            raise e
+    @staticmethod
+    def get_sherif_sales_between_dates(start_date: datetime, end_date: datetime) -> list:
+        """
+        Retrieves all SherifSale records where SHERIFF_SALE_DATE is between start_date and end_date.
+
+        :param start_date: The start date for filtering.
+        :param end_date: The end date for filtering.
+        :return: A list of SherifSale instances between the specified dates.
+        """
+        try:
+            sherif_sales = session.query(SherifSale).filter(
+                SherifSale.SHERIFF_SALE_DATE.between(start_date, end_date)
+            ).all()
+            return sherif_sales
+        except Exception as e:
+            print(f"An error occurred while fetching records: {e}")
+            raise e
