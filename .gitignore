@@ -8,7 +8,7 @@ app/__pycache__
 app/service/__pycache__
 app/service/test/__pycache__
 app/util/__pycache__
-
+app/util/tests/__pycache__
 app/model/__pycache__
 app/model/test/__pycache__
 app/model/charts/__pycache__
