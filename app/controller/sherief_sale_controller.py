@@ -1,10 +1,12 @@
+import io
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, IO
 
-from flask import jsonify, Response, request
+from flask import jsonify, Response, request, send_file
 from werkzeug.datastructures import FileStorage
 
 from app import app, Constants
+from app.service.azure_blob import AzureBlobStorage, BlobType
 from app.service.sherief_sale_service import SheriffSaleService
 from app.util.date_util import DateUtil
 from app.util.jwt_utls import verify_jwt
@@ -127,3 +129,86 @@ def get_sheriff_data_between():
         return SheriffSaleService.get_sheriff_sale_data_between_two_dates(start_date, end_date)
     except Exception as e:
         raise e
+
+
+
+@app.route('/get-file-sheriff-sale')
+@verify_jwt
+def get_file_sheriff_sale():
+    """
+    Get file from Azure Blob Storage
+    ---
+    tags:
+      - Sherif-Controller
+    parameters:
+      - name: path
+        in: query
+        type: string
+        required: true
+        description: Path of the file in Azure Blob Storage
+    responses:
+      200:
+        description: File retrieved successfully
+      400:
+        description: Path parameter is missing
+      404:
+        description: File not found
+    """
+    blob_name = request.args.get('path')
+    print(blob_name)
+    if blob_name:
+        try:
+
+            # Download the blob data
+            blob_data = AzureBlobStorage.download_file(blob_name, BlobType.SHERIF_SALE_BLOB).readall()
+            # Return the blob data as a file attachment
+            return send_file(
+                io.BytesIO(blob_data),
+                as_attachment=True,
+                download_name=blob_name
+            )
+        except Exception as e:
+            return str(e), 404
+    else:
+        return "Path parameter is missing", 400
+
+
+@app.route('/get-xlsx-sheriff-sale')
+@verify_jwt
+def get_xlsx_sheriff_sale():
+    """
+    Get xlsx from db
+    ---
+    tags:
+      - Sherif-Controller
+    parameters:
+      - name: id
+        in: query
+        type: string
+        required: true
+        description: id of master sherif sale table
+    responses:
+      200:
+        description: xlsx retrieved successfully
+      400:
+        description: Path parameter is missing
+      404:
+        description: File not found
+    """
+    id = int (request.args.get('id'))
+    print(f"id: {id}")
+    if id:
+        try:
+
+            # Download the blob data
+            xlsx = SheriffSaleService.export_properties_to_excel(id)
+            # Return the blob data as a file attachment
+            return send_file(
+                xlsx,
+                as_attachment=True,
+                download_name="sheriff_sale.xlsx"
+            )
+        except Exception as e:
+            return str(e), 404
+    else:
+        return "id parameter is missing", 400

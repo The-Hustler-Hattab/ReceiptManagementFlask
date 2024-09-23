@@ -10,7 +10,7 @@ class TestAzureBlobStorage(TestCase):
             print("File uploaded successfully")
 
     def test_download_file(self):
-        download_file_blob = AzureBlobStorage.download_file("2023/10/2024-03-31-11-18-53_$26.04.pdf")
+        download_file_blob = AzureBlobStorage.download_file("2023/10/2024-03-31-11-18-53_$26.04.pdf",BlobType.RECEIPT_BLOB)
         with open("static/downloaded_file.pdf", "wb") as download_file:
             download_file.write(download_file_blob.readall())
             print("File downloaded successfully")

@@ -5,7 +5,7 @@ from typing import Tuple, Dict
 from flask import jsonify, Response, request, send_file
 
 from app import app
-from app.service.azure_blob import AzureBlobStorage
+from app.service.azure_blob import AzureBlobStorage, BlobType
 from app.util.jwt_utls import verify_jwt, verify_token_and_role
 
 
@@ -37,7 +37,7 @@ def get_file():
         try:
 
             # Download the blob data
-            blob_data = AzureBlobStorage.download_file(blob_name).readall()
+            blob_data = AzureBlobStorage.download_file(blob_name, BlobType.RECEIPT_BLOB).readall()
             # Return the blob data as a file attachment
             return send_file(
                 io.BytesIO(blob_data),

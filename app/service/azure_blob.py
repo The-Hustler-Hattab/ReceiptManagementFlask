@@ -25,19 +25,25 @@ class AzureBlobStorage:
 
     @staticmethod
     def upload_file(data: bytes, blob_name: str, blob_type: BlobType) -> None:
-        if blob_type == BlobType.SHERIF_SALE_BLOB:
-            container_name = app.config.get(Constants.BLOB_CONTAINER_SHERIF_SALE)
-            container_client: ContainerClient = AzureBlobStorage.blob_service_client.get_container_client(container_name)
-            container_client.upload_blob(name=blob_name, data=data)
-            print(f"File '{blob_name}' uploaded to Azure sherif Blob Storage.")
-        else:
-            AzureBlobStorage.container_client.upload_blob(name=blob_name, data=data)
-            print(f"File '{blob_name}' uploaded to Azure receipt Blob Storage.")
+
+        container_client = AzureBlobStorage.get_container_client_by_type(blob_type)
+        container_client.upload_blob(name=blob_name, data=data)
 
     @staticmethod
-    def download_file(blob_name: str) -> StorageStreamDownloader:
-        # with open(local_file_path, "wb") as download_file:
-        return AzureBlobStorage.container_client.download_blob(blob=blob_name)
+    def get_container_client_by_type(blob_type: BlobType) -> ContainerClient:
+        if blob_type == BlobType.SHERIF_SALE_BLOB:
+            container_name = app.config.get(Constants.BLOB_CONTAINER_SHERIF_SALE)
+            print(f"using Azure sherif Blob Storage.")
+            return AzureBlobStorage.blob_service_client.get_container_client(container_name)
+        else:
+            print(f"using Azure receipt Blob Storage.")
+            return AzureBlobStorage.container_client
+
+    @staticmethod
+    def download_file(blob_name: str, blob_type: BlobType) -> StorageStreamDownloader:
+        container_client = AzureBlobStorage.get_container_client_by_type(blob_type)
+
+        return container_client.download_blob(blob=blob_name)
 
     @staticmethod
     def delete_file(blob_name: str) -> tuple[Response, int]:
@@ -97,7 +103,7 @@ class AzureBlobStorage:
 
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for file_name in files:
-                blob_stream_downloader = AzureBlobStorage.download_file(file_name)
+                blob_stream_downloader = AzureBlobStorage.download_file(file_name,BlobType.RECEIPT_BLOB)
                 file_content = blob_stream_downloader.readall()
                 zip_file.writestr(file_name, file_content)
 
@@ -117,7 +123,7 @@ class AzureBlobStorage:
         for receipt in receipts:
             file_path: str = receipt.file_path
             if file_path is not None or file_path != "":
-                file: StorageStreamDownloader = AzureBlobStorage.download_file(file_path)
+                file: StorageStreamDownloader = AzureBlobStorage.download_file(file_path,BlobType.RECEIPT_BLOB)
                 file_hash = DataManipulation.compute_hash(file.readall())
                 Receipts.update_hash(file_path, file_hash)
 

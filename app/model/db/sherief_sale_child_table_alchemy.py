@@ -5,7 +5,6 @@ from sqlalchemy import Column, Numeric, String, DateTime, text, select, not_, Fo
 from sqlalchemy.orm import relationship
 
 from app.model.db.receipts_alchemy import Base, session
-from app.model.db.sherif_sale_properties_alchemy import PropertySherifSale
 
 
 class SherifSalesChild:

@@ -1,5 +1,7 @@
+import io
 import json
 from datetime import datetime
+from io import BytesIO
 from typing import IO, Tuple, Dict
 
 from werkzeug.datastructures import FileStorage
@@ -11,14 +13,14 @@ from app.model.generic.sheriff_sale_detail_model import SheriffSaleDetailModel
 from app.service.azure_blob import AzureBlobStorage, BlobType
 from app.service.queue_service import QueueService
 from app.service.sherief_sale_ai_service import AzureCustomModel
-from app.service.web_scraper import WebScrapper
+# from app.service.web_scraper import WebScrapper
 # from app.service.selenium_web_scraper_service import ZillowScraper
 
 from app.util.data_manipulation import DataManipulation
 from app.util.date_util import DateUtil
 from app.util.pdf_util import PdfUtil
 
-
+import pandas as pd
 class SheriffSaleService:
 
     @staticmethod
@@ -147,43 +149,43 @@ class SheriffSaleService:
     #
     #     return {"message": "enriched data successfully"}, 200
 
-    @staticmethod
-    def enrich_zillow_data_web_scrapper():
-        property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_zillow_data_is_missing("1",
-                                                                                                            "Real Estate Sale - Mortgage Foreclosure")
-        print(f"property list: {property_list}")
-        for i, property in enumerate(property_list):
-            # Handle the first item differently
-            if i == 0:
-                print("Handling the first property differently")
-                # Custom logic for the first property
-                WebScrapper.start_browser(property.zillow_link)
-                zillow = WebScrapper.start_web_scraping_routine()
-                property.add_zillow_data(zillow)
-                # Maybe a different way to save the first property
-                PropertySherifSale.save_sherif_sale_to_db(property)
-            else:
-                # Regular handling for the rest of the properties
-                zillow_model = WebScrapper.continue_web_scraping_routine(property.zillow_link)
-                property.add_zillow_data(zillow_model)
-                PropertySherifSale.save_sherif_sale_to_db(property)
-
-        return {"message": "enriched data successfully"}, 200
-
-    @staticmethod
-    def enrich_amount_in_dispute_web_scrapper():
-        property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_ammount_in_dispute_is_missing(
-            "Real Estate Sale - Mortgage Foreclosure")
-        print(f"property list: {property_list}")
-        for property in property_list:
-            if property.case_number is None or property.case_number == "":
-                continue
-            amount_in_dispute = WebScrapper.get_amount_in_dispute(property.case_number)
-            property.amount_in_dispute = amount_in_dispute
-            # Maybe a different way to save the first property
-            PropertySherifSale.save_sherif_sale_to_db(property)
-
-        return {"message": "enriched data successfully"}, 200
+    # @staticmethod
+    # def enrich_zillow_data_web_scrapper():
+    #     property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_zillow_data_is_missing("1",
+    #                                                                                                         "Real Estate Sale - Mortgage Foreclosure")
+    #     print(f"property list: {property_list}")
+    #     for i, property in enumerate(property_list):
+    #         # Handle the first item differently
+    #         if i == 0:
+    #             print("Handling the first property differently")
+    #             # Custom logic for the first property
+    #             WebScrapper.start_browser(property.zillow_link)
+    #             zillow = WebScrapper.start_web_scraping_routine()
+    #             property.add_zillow_data(zillow)
+    #             # Maybe a different way to save the first property
+    #             PropertySherifSale.save_sherif_sale_to_db(property)
+    #         else:
+    #             # Regular handling for the rest of the properties
+    #             zillow_model = WebScrapper.continue_web_scraping_routine(property.zillow_link)
+    #             property.add_zillow_data(zillow_model)
+    #             PropertySherifSale.save_sherif_sale_to_db(property)
+    #
+    #     return {"message": "enriched data successfully"}, 200
+    #
+    # @staticmethod
+    # def enrich_amount_in_dispute_web_scrapper():
+    #     property_list: list['PropertySherifSale'] = PropertySherifSale.get_all_where_ammount_in_dispute_is_missing(
+    #         "Real Estate Sale - Mortgage Foreclosure")
+    #     print(f"property list: {property_list}")
+    #     for property in property_list:
+    #         if property.case_number is None or property.case_number == "":
+    #             continue
+    #         amount_in_dispute = WebScrapper.get_amount_in_dispute(property.case_number)
+    #         property.amount_in_dispute = amount_in_dispute
+    #         # Maybe a different way to save the first property
+    #         PropertySherifSale.save_sherif_sale_to_db(property)
+    #
+    #     return {"message": "enriched data successfully"}, 200
 
     @staticmethod
     def get_sheriff_sale_data_between_two_dates(start_date: datetime, end_date: datetime) -> Tuple[Dict[str, str], int]:
@@ -192,3 +194,64 @@ class SheriffSaleService:
         sherif_sales_list = [sherif_sale.to_dict() for sherif_sale in sheriff_sale_data]
 
         return {"message": "pulled data successfully", "sheriff_data": sherif_sales_list}, 200
+
+
+
+
+    @staticmethod
+    def export_properties_to_excel(sherif_sale_id: int) -> BytesIO:
+        """
+        Exports properties associated with the given SherifSale ID to an Excel file in memory,
+        making the 'zillow_link' column clickable.
+
+        :param sherif_sale_id: The ID of the SherifSale.
+        :return: A BytesIO object containing the Excel file data.
+        """
+        try:
+            # Get properties
+            properties = SherifSale.get_properties_by_sherif_sale_id(sherif_sale_id)
+
+            if not properties:
+                print(f"No properties found for SherifSale ID {sherif_sale_id}")
+                return BytesIO()  # Return an empty BytesIO object
+
+            # Convert to list of dictionaries
+            properties_list = [property.to_dict() for property in properties]
+
+            # Create DataFrame
+            df = pd.DataFrame(properties_list)
+
+            # Create a BytesIO buffer
+            output = BytesIO()
+
+            # Use XlsxWriter as the engine
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, index=False, sheet_name='Properties')
+
+                # Access the workbook and worksheet objects
+                workbook = writer.book
+                worksheet = writer.sheets['Properties']
+
+                # Create a format for hyperlinks
+                hyperlink_format = workbook.add_format({'font_color': 'blue', 'underline': True})
+
+                # Get the column index of 'zillow_link'
+                zillow_link_col_idx = df.columns.get_loc('zillow_link')
+
+                # Iterate over the DataFrame rows and write hyperlinks
+                for row_num, link in enumerate(df['zillow_link'], start=1):  # start=1 to skip header row
+                    if pd.notnull(link):
+                        # Write the hyperlink
+                        worksheet.write_url(row_num, zillow_link_col_idx, link, hyperlink_format, string=link)
+                    else:
+                        # If no link, write an empty string or leave as is
+                        worksheet.write(row_num, zillow_link_col_idx, '', workbook.add_format())
+
+            # Seek to the beginning of the stream
+            output.seek(0)
+
+            print("Excel file has been created successfully in memory.")
+            return output
+        except Exception as e:
+            print(f"[-] An error occurred: {e}")
+            raise e

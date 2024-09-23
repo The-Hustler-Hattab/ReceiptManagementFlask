@@ -5,6 +5,8 @@ from sqlalchemy import Column, Numeric, String, DateTime, insert
 from sqlalchemy.orm import relationship
 
 from app.model.db.receipts_alchemy import Base, session
+from app.model.db.sherief_sale_child_table_alchemy import SherifSaleChild
+from app.model.db.sherif_sale_properties_alchemy import PropertySherifSale
 
 
 class SherifSales:
@@ -110,4 +112,25 @@ class SherifSale(Base):
             return sherif_sales
         except Exception as e:
             print(f"An error occurred while fetching records: {e}")
+            raise e
+
+    @staticmethod
+    def get_properties_by_sherif_sale_id(sherif_sale_id: int) -> list["SherifSaleChild"]:
+        """
+        Retrieves all PropertySherifSale records where SherifSale.id equals the given ID.
+
+        :param sherif_sale_id: The ID of the SherifSale.
+        :return: A list of PropertySherifSale instances.
+        """
+        try:
+            properties = session.query(PropertySherifSale).join(
+                PropertySherifSale.sherif_sale_child
+            ).join(
+                SherifSaleChild.sherif_sale
+            ).filter(
+                SherifSale.id == sherif_sale_id
+            ).all()
+            return properties
+        except Exception as e:
+            print(f"An error occurred while fetching properties: {e}")
             raise e

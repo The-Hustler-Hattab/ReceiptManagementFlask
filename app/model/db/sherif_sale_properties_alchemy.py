@@ -429,5 +429,5 @@ class PropertySherifSale(Base):
             session.rollback()  # Rollback in case of error
             print(f"An error occurred: {e}")
 
-        finally:
-            session.close()  # Close the session
+
+
