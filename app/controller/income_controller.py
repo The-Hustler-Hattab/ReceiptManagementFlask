@@ -13,7 +13,7 @@ logger.name = 'IncomeController'
 
 
 @app.route('/store-income', methods=['POST'])
-# @verify_jwt
+@verify_jwt
 def store_income() -> Tuple[Dict[str, str], int]:
     """
      Store Income Endpoint
