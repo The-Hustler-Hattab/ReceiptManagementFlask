@@ -1,3 +1,4 @@
+import logging
 
 from flask import Flask
 from dotenv import load_dotenv
@@ -18,10 +19,12 @@ class Constants:
     BLOB_CONTAINER_NAME = 'BLOB_CONTAINER_NAME'
     BLOB_CONNECTION_STRING = 'BLOB_CONNECTION_STRING'
     ADMIN_GROUP = 'ADMIN_GROUP'
-    BLOB_CONTAINER_SHERIF_SALE='BLOB_CONTAINER_SHERIF_SALE'
-    QUEUE_SHERIF_SALE='QUEUE_SHERIF_SALE'
+    BLOB_CONTAINER_SHERIF_SALE = 'BLOB_CONTAINER_SHERIF_SALE'
+    QUEUE_SHERIF_SALE = 'QUEUE_SHERIF_SALE'
     AZURE_FORM_RECOGNIZER_MODEL_ID = 'AZURE_FORM_RECOGNIZER_MODEL_ID'
-
+    PLAID_CLIENT_ID = 'PLAID_CLIENT_ID'
+    PLAID_SECRET = 'PLAID_SECRET'
+    BLOB_CONTAINER_INCOME = 'BLOB_CONTAINER_INCOME'
 
 app = Flask(__name__)
 oauth = OAuth(app)
@@ -42,7 +45,9 @@ app.config[Constants.BLOB_CONTAINER_SHERIF_SALE] = os.getenv(Constants.BLOB_CONT
 app.config[Constants.QUEUE_SHERIF_SALE] = os.getenv(Constants.QUEUE_SHERIF_SALE)
 app.config[Constants.ADMIN_GROUP] = os.getenv(Constants.ADMIN_GROUP)
 app.config[Constants.AZURE_FORM_RECOGNIZER_MODEL_ID] = os.getenv(Constants.AZURE_FORM_RECOGNIZER_MODEL_ID)
-
+app.config[Constants.PLAID_CLIENT_ID] = os.getenv(Constants.PLAID_CLIENT_ID)
+app.config[Constants.PLAID_SECRET] = os.getenv(Constants.PLAID_SECRET)
+app.config[Constants.BLOB_CONTAINER_INCOME] = os.getenv(Constants.BLOB_CONTAINER_INCOME)
 
 # load swagger
 swagger = Swagger(app)
@@ -52,12 +57,11 @@ CORS(app, resources={r"/*": {"origins": allowed_domains}}, allow_headers="*")
 
 OKTA_JWK_URL = app.config.get(Constants.OIDC_JWK_URL)
 
-
-
-
-
-
-
+logger = logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Add timestamp format
+    datefmt='%Y-%m-%d %H:%M:%S'  # Customize the date format
+)
 
 # Import routes after creating the app instance to avoid circular imports
 from app import routes
@@ -65,3 +69,5 @@ from app.controller import analytics_controller
 from app.controller import blob_controller
 from app.controller import receipts_controller
 from app.controller import sherief_sale_controller
+from app.controller import plaid_controller
+from app.controller import income_controller

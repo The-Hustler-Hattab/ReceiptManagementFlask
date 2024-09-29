@@ -15,6 +15,7 @@ from enum import Enum
 class BlobType(Enum):
     SHERIF_SALE_BLOB = 'SHERIF_SALE_BLOB'
     RECEIPT_BLOB = 'RECEIPT_BLOB'
+    INCOME_BLOB = 'INCOME_BLOB'
 
 
 class AzureBlobStorage:
@@ -34,6 +35,10 @@ class AzureBlobStorage:
         if blob_type == BlobType.SHERIF_SALE_BLOB:
             container_name = app.config.get(Constants.BLOB_CONTAINER_SHERIF_SALE)
             print(f"using Azure sherif Blob Storage.")
+            return AzureBlobStorage.blob_service_client.get_container_client(container_name)
+        elif blob_type == BlobType.INCOME_BLOB:
+            container_name = app.config.get(Constants.BLOB_CONTAINER_INCOME)
+            print(f"using Azure income Blob Storage.")
             return AzureBlobStorage.blob_service_client.get_container_client(container_name)
         else:
             print(f"using Azure receipt Blob Storage.")

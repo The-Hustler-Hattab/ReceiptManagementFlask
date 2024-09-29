@@ -88,5 +88,18 @@ def get_decoded_token() -> dict:
 
 def get_full_name():
     decoded_token = get_decoded_token()
-    full_name = decoded_token.get('UserFullName')
+    full_name: str = decoded_token.get('UserFullName')
     return full_name
+
+
+def get_user_full_name() -> str:
+    try:
+        full_name = get_full_name()
+    except Exception as e:
+        print(e)
+        full_name = None
+
+    if full_name:
+        return full_name
+    else:
+        return Constants.APP_NAME
