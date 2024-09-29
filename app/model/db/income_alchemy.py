@@ -21,6 +21,7 @@ class LLCIncome(Base):
     proof_of_income_file_path = Column(String(500), nullable=True)
     created_at: DateTime = Column(DateTime, nullable=False, default=datetime.now)
     created_by = Column(String, nullable=False)
+    received_at: DateTime = Column(DateTime, nullable=False)
 
 
 

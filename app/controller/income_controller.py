@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Tuple, Dict
 
 from flask import jsonify, Response, request
@@ -6,6 +7,7 @@ from werkzeug.datastructures import FileStorage
 from app import Constants, app
 from app.model.db.income_alchemy import LLCIncome
 from app.service.income_service import IncomeService
+from app.util.date_util import DateUtil
 from app.util.jwt_utls import verify_jwt, get_user_full_name
 
 logger = app.logger
@@ -53,6 +55,11 @@ def store_income() -> Tuple[Dict[str, str], int]:
          type: string
          required: false
          description: comment on the income.
+       - name: received_at
+         in: formData
+         type: string
+         required: false
+         description: date income received.
      responses:
        200:
          description: OK if the file is uploaded successfully.
@@ -68,6 +75,9 @@ def store_income() -> Tuple[Dict[str, str], int]:
     net_revenue = float(request.form.get('net_revenue'))
     tax = float(request.form.get('tax'))
     comment = request.form.get('comment')
+    received_at = request.form.get('received_at')
+    received_at_date: datetime = DateUtil.convert_string_to_date(received_at)
+
     if (tax + net_revenue) != gross_revenue:
         return {'message': 'tax + net_revenue != gross_revenue'}, 400
     llc_income: LLCIncome = LLCIncome()
@@ -78,8 +88,8 @@ def store_income() -> Tuple[Dict[str, str], int]:
     llc_income.tax = tax
     llc_income.comment = comment
     llc_income.created_by = get_user_full_name()
-
+    llc_income.received_at = received_at_date
     logger.info(
         f"source: '{source}', gross_revenue: '{gross_revenue}', tax: '{tax}', comment: '{comment}',"
-        f" net_revenue: '{net_revenue}, created_by: '{llc_income.created_by}', file: '{file.name}'")
+        f" net_revenue: '{net_revenue}, created_by: '{llc_income.created_by}'")
     return IncomeService.save_income_form(llc_income, file)
