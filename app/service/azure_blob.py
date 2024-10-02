@@ -64,6 +64,18 @@ class AzureBlobStorage:
             return jsonify({'message': error_msg}), 500
 
     @staticmethod
+    def delete_file_blob(blob_name: str, blob_type: BlobType) -> tuple[Response, int]:
+        try:
+            container_client = AzureBlobStorage.get_container_client_by_type(blob_type)
+            container_client.delete_blob(blob=blob_name)
+            print(f"File '{blob_name}' deleted from Azure Blob Storage.")
+            return jsonify({'message': f'File "{blob_name}" deleted successfully'}), 200
+        except Exception as e:
+            error_msg = f"Failed to delete file '{blob_name}': {e}"
+            print(error_msg)
+            return jsonify({'message': error_msg}), 500
+
+    @staticmethod
     def list_files() -> List[Dict[str, Union[Dict[str, str], List[Dict[str, Dict[str, str]]]]]]:
         blob_list = AzureBlobStorage.container_client.list_blobs()
         file_structure = []
