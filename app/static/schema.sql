@@ -198,3 +198,44 @@ MODIFY COLUMN `created_by` VARCHAR(255) NOT NULL;
 
 ALTER TABLE `LLC_INCOME`
 ADD COLUMN `received_at` DATE NOT NULL;
+
+
+CREATE TABLE `plaid_institution_access_tokens` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`institution_name` VARCHAR(255),
+	`institution_id` INT,
+	`access_token` INT,
+	`created_at` DATE,
+	`created_by` VARCHAR(255),
+	PRIMARY KEY (`id`)
+);
+
+ALTER TABLE `plaid_institution_access_tokens`
+ADD COLUMN `item_id` VARCHAR(255) NOT NULL;
+
+ALTER TABLE `plaid_institution_access_tokens`
+MODIFY COLUMN `institution_id` VARCHAR(255) NOT NULL;
+
+ALTER TABLE `plaid_institution_access_tokens`
+MODIFY COLUMN `access_token` VARCHAR(255) NOT NULL;
+
+ALTER TABLE `plaid_institution_access_tokens`
+MODIFY COLUMN `created_at` TIMESTAMP NOT NULL;
+
+CREATE TABLE `plaid_accounts` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`institution_id` INT NOT NULL,
+	`account_id` VARCHAR(255) NOT NULL,
+	`mask` INT NOT NULL,
+	`name` VARCHAR(255) NOT NULL,
+	`subtype` VARCHAR(255) NOT NULL,
+	`type` VARCHAR(255) NOT NULL,
+	PRIMARY KEY (`id`),
+    FOREIGN KEY (`institution_id`) REFERENCES `plaid_institution_access_tokens`(`id`) ON DELETE CASCADE
+);
+
+ALTER TABLE `plaid_accounts`
+ADD COLUMN `created_at` TIMESTAMP NOT NULL;
+
+ALTER TABLE `plaid_accounts`
+MODIFY COLUMN `mask` VARCHAR(255) NOT NULL;

@@ -128,3 +128,23 @@ class DataManipulation:
 
         # Return the hexadecimal digest of the hash
         return hash_obj.hexdigest()
+
+    @staticmethod
+    def get_sha256_hash(input_str: str) -> str:
+        """
+        Generates the SHA-256 hash of a given string.
+
+        :param input_str: The input string to hash
+        :return: The SHA-256 hash as a hexadecimal string
+        """
+        # Encode the input string to bytes
+        encoded_str = input_str.encode('utf-8')
+
+        # Create a SHA-256 hash object
+        sha256_hash = hashlib.sha256()
+
+        # Update the hash object with the bytes of the input string
+        sha256_hash.update(encoded_str)
+
+        # Return the hexadecimal representation of the hash
+        return sha256_hash.hexdigest()

@@ -1,11 +1,13 @@
 import logging
 
+import plaid
 from flask import Flask
 from dotenv import load_dotenv
 import os
 from flasgger import Swagger
 from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
+from plaid.api import plaid_api
 
 
 class Constants:
@@ -51,17 +53,33 @@ app.config[Constants.BLOB_CONTAINER_INCOME] = os.getenv(Constants.BLOB_CONTAINER
 
 # load swagger
 swagger = Swagger(app)
+
+# security configuration
 allowed_domains = ['https://hattab-llc.mtattab.com', 'http://localhost:4200', 'http://127.0.0.1:4200']
-
 CORS(app, resources={r"/*": {"origins": allowed_domains}}, allow_headers="*")
-
 OKTA_JWK_URL = app.config.get(Constants.OIDC_JWK_URL)
 
-logger = logging.basicConfig(
+#  logger configuration
+logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Add timestamp format
     datefmt='%Y-%m-%d %H:%M:%S'  # Customize the date format
 )
+
+
+# plaid initial configuration
+configuration = plaid.Configuration(
+    # host=plaid.Environment.Sandbox,
+    host=plaid.Environment.Production,
+
+    api_key={
+        'clientId': app.config.get(Constants.PLAID_CLIENT_ID),
+        'secret': app.config.get(Constants.PLAID_SECRET),
+    }
+)
+api_client = plaid.ApiClient(configuration)
+client = plaid_api.PlaidApi(api_client)
+
 
 # Import routes after creating the app instance to avoid circular imports
 from app import routes

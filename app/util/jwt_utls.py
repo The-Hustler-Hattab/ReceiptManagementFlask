@@ -92,6 +92,12 @@ def get_full_name():
     return full_name
 
 
+def get_user_email():
+    decoded_token = get_decoded_token()
+    full_name: str = decoded_token.get('UserEmail')
+    return full_name
+
+
 def get_user_full_name() -> str:
     try:
         full_name = get_full_name()

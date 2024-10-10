@@ -1,13 +1,14 @@
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import Integer, Column, Float, Date, String, DateTime
-from app import Constants, app
 from app.model.db.receipts_alchemy import Base, session
 from app.service.azure_blob import AzureBlobStorage, BlobType
 
-logger = app.logger
-logger.name = 'LLCIncome'
+
+logger = logging.getLogger('LLCIncome')
+
 @dataclass
 class LLCIncome(Base):
     __tablename__ = 'LLC_INCOME'

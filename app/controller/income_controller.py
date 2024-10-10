@@ -1,4 +1,5 @@
 import io
+import logging
 from datetime import datetime
 from typing import Tuple, Dict
 
@@ -12,8 +13,8 @@ from app.service.income_service import IncomeService
 from app.util.date_util import DateUtil
 from app.util.jwt_utls import verify_jwt, get_user_full_name, verify_token_and_role
 
-logger = app.logger
-logger.name = 'IncomeController'
+
+log = logging.getLogger('IncomeController')
 
 
 @app.route('/store-income', methods=['POST'])
@@ -91,7 +92,7 @@ def store_income() -> Tuple[Dict[str, str], int]:
     llc_income.comment = comment
     llc_income.created_by = get_user_full_name()
     llc_income.received_at = received_at_date
-    logger.info(
+    log.info(
         f"source: '{source}', gross_revenue: '{gross_revenue}', tax: '{tax}', comment: '{comment}',"
         f" net_revenue: '{net_revenue}, created_by: '{llc_income.created_by}'")
     return IncomeService.save_income_form(llc_income, file)
@@ -119,7 +120,7 @@ def get_all_income() -> Tuple[Dict[str, str], int]:
             'message': 'retrieved income successfully'
         }, 200
     except Exception as e:
-        logger.error(f"Error retrieving income: {e}")
+        log.error(f"Error retrieving income: {e}")
         return {
             'message': 'Failed to retrieve income'
         }, 500
