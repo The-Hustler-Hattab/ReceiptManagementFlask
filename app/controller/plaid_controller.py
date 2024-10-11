@@ -1,12 +1,12 @@
 import logging
 from typing import Tuple, Dict
 
-from flask import jsonify, Response, request
-from app import Constants, app, client
+from flask import jsonify, request, Response
+from app import  app
 from app.model.db.plaid_access_token_alchemy import PlaidInstitutionAccessTokens
 from app.service.plaid_service import PlaidService
 
-from app.util.jwt_utls import get_user_email, verify_jwt, verify_token_and_role
+from app.util.jwt_utls import  verify_token_and_role
 
 log = logging.getLogger('PlaidController')
 
@@ -67,6 +67,7 @@ def get_transactions():
     except Exception as e:
         # raise e
         return jsonify({"error": str(e)}), 500
+
 @app.route('/create-link-token', methods=['POST'])
 @verify_token_and_role
 def create_link_token():
@@ -183,3 +184,38 @@ def get_all_banks() -> Tuple[Dict[str, str], int]:
         return {
             'message': 'Failed to retrieve income'
         }, 500
+
+@app.route('/delete-by-bank-id/<int:bank_id>', methods=['DELETE'])
+@verify_token_and_role
+def delete_by_bank_id(bank_id: int) -> tuple[Response, int]:
+    """
+    Delete bank by ID
+    ---
+    tags:
+      - PLAID-Controller
+    parameters:
+      - in: path
+        name: bank_id
+        required: true
+        schema:
+          type: integer
+          description: The ID of the bank to delete
+    responses:
+      200:
+        description: OK if bank is deleted.
+      404:
+        description: Not Found if bank ID is not found.
+      500:
+        description: Internal Server Error if an exception occurs.
+    """
+    try:
+        # Call the delete_by_id function
+        if PlaidInstitutionAccessTokens.delete_by_id(bank_id):
+            return jsonify({"message": f"Bank with id {bank_id} deleted successfully"}), 200
+        else:
+            return jsonify({"message": f"Bank with id {bank_id} not found"}), 404
+
+    except Exception as e:
+        log.error(f"Error deleting bank by id: {e}")
+        # raise e
+        return jsonify({"message": "Internal Server Error"}), 500

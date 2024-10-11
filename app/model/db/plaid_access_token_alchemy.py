@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, date
 
-from sqlalchemy import Integer, Column, String, Date, DateTime
+from sqlalchemy import Integer, Column, String, Date, DateTime, text
 from sqlalchemy.orm import relationship
 
 from app.model.db.receipts_alchemy import Base, session
@@ -44,12 +44,12 @@ class PlaidInstitutionAccessTokens(Base):
             session.add(plaidInstitutionAccessTokens)
             # Commit the session to persist the object in the database
             session.commit()
-            print("[+] plaidInstitutionAccessTokens saved to db")
+            logger.info("[+] plaidInstitutionAccessTokens saved to db")
             return plaidInstitutionAccessTokens.id
 
         except Exception as e:
             session.rollback()
-            print(f'Error committing to the db: {e}')
+            logger.info(f'Error committing to the db: {e}')
             raise e
 
     @staticmethod
@@ -73,3 +73,22 @@ class PlaidInstitutionAccessTokens(Base):
         except Exception as e:
             logger.error(f"Failed to retrieve access token: {e}")
             raise e
+
+    @staticmethod
+    def delete_by_id(id: int) -> bool:
+        """Delete a record by its primary key `id` using raw SQL."""
+        try:
+
+            # Record exists, proceed to delete
+            delete_query = text("DELETE FROM plaid_institution_access_tokens WHERE id = :id")
+            session.execute(delete_query, {'id': id})
+            session.commit()
+            logger.info(f"[+] Record with id {id} has been deleted")
+            return True
+
+
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Failed to delete record: {e}")
+            raise e
+
