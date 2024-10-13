@@ -144,7 +144,7 @@ class PlaidService:
         except Exception as e:
             print(f'Error fetching transactions: {e}')
             # raise e;
-            return jsonify({'error': 'An error occurred while fetching transactions'}), 500
+            return jsonify({'message': 'An error occurred while fetching transactions'}), 500
 
     @staticmethod
     def get_balance(access_token):
@@ -203,7 +203,7 @@ class PlaidService:
                 'name': transaction.name,
                 'merchant_name': transaction.merchant_name,
                 'authorized_date': authorized_date,
-                'amount': transaction.amount,
+                'amount': transaction.amount * -1,
                 'date': transaction_date,
                 'payment_channel': transaction.payment_channel,
                 'account_id': transaction.account_id,

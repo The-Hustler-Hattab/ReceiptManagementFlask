@@ -15,7 +15,7 @@ from app.model.charts.pie_chart import PieChart
 # Create a base class for our declarative models
 Base = declarative_base()
 
-engine = create_engine(app.config.get(Constants.MYSQL_URL))
+engine = create_engine(app.config.get(Constants.MYSQL_URL), pool_size=5, max_overflow=0, pool_pre_ping=True)
 
 Base.metadata.create_all(engine)
 

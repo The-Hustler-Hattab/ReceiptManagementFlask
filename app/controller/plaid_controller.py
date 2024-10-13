@@ -66,7 +66,7 @@ def get_transactions():
 
     except Exception as e:
         # raise e
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"message": str(e)}), 500
 
 @app.route('/create-link-token', methods=['POST'])
 @verify_token_and_role
