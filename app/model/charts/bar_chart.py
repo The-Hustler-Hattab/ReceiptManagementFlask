@@ -75,6 +75,12 @@ class BarChart:
             f'total_amount_month: {self.total_amount_month}, total_amount_subtotal: {self.total_amount_subtotal}, '
             f'total_amount_subtotal_month: {self.total_amount_subtotal_month}, total_tax: {self.total_tax}, total_tax_month: {self.total_tax_month}')
 
+    def get_bar_chart_month(self):
+        if self.month < 10:
+            return f'0{self.month}'
+        else:
+            return self.month
+
     @staticmethod
     def get_labels(chart_models: List['BarChart'], field_name: str) -> List[str]:
         """
@@ -91,7 +97,7 @@ class BarChart:
         for chart in chart_models:
             field_value = getattr(chart, field_name)
             if field_value != 0.0:
-                labels_set.add(f'{chart.year}-{chart.month}: ${field_value}')
+                labels_set.add(f'{chart.year}-{chart.get_bar_chart_month()}: ${field_value}')
 
         labels_list = list(labels_set)
         labels_list.sort()
@@ -206,3 +212,6 @@ class BarChart:
                 filtered_charts.extend(entries)
 
         return filtered_charts
+
+
+
