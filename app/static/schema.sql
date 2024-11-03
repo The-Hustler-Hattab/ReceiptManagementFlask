@@ -239,3 +239,17 @@ ADD COLUMN `created_at` TIMESTAMP NOT NULL;
 
 ALTER TABLE `plaid_accounts`
 MODIFY COLUMN `mask` VARCHAR(255) NOT NULL;
+
+
+CREATE TABLE `contractors` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`created_at` TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP,
+	`created_by` VARCHAR(100) NOT NULL,
+	`contractor_name` VARCHAR(200) NOT NULL,
+	`contractor_skill` VARCHAR(500) NOT NULL,
+	`job_cost` VARCHAR(50),
+	`phone_number` VARCHAR(50) NOT NULL,
+	`comment` VARCHAR(900),
+	`quote_file_location` VARCHAR(300),
+	PRIMARY KEY (`id`)
+);

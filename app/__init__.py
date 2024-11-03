@@ -27,6 +27,7 @@ class Constants:
     PLAID_CLIENT_ID = 'PLAID_CLIENT_ID'
     PLAID_SECRET = 'PLAID_SECRET'
     BLOB_CONTAINER_INCOME = 'BLOB_CONTAINER_INCOME'
+    BLOB_CONTAINER_CONTRACTOR= 'BLOB_CONTAINER_CONTRACTOR'
 
 app = Flask(__name__)
 oauth = OAuth(app)
@@ -50,6 +51,7 @@ app.config[Constants.AZURE_FORM_RECOGNIZER_MODEL_ID] = os.getenv(Constants.AZURE
 app.config[Constants.PLAID_CLIENT_ID] = os.getenv(Constants.PLAID_CLIENT_ID)
 app.config[Constants.PLAID_SECRET] = os.getenv(Constants.PLAID_SECRET)
 app.config[Constants.BLOB_CONTAINER_INCOME] = os.getenv(Constants.BLOB_CONTAINER_INCOME)
+app.config[Constants.BLOB_CONTAINER_CONTRACTOR] = os.getenv(Constants.BLOB_CONTAINER_CONTRACTOR)
 
 # load swagger
 swagger = Swagger(app)
@@ -89,3 +91,5 @@ from app.controller import receipts_controller
 from app.controller import sherief_sale_controller
 from app.controller import plaid_controller
 from app.controller import income_controller
+from app.controller import contractor_controller
+
