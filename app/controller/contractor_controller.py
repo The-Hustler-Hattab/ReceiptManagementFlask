@@ -30,7 +30,7 @@ def save_contractor() -> Tuple[Dict[str, str], int]:
          in: formData
          type: file
          required: false
-         description: The PDF file to upload.
+         description: The file to upload.
        - name: contractor_name
          in: formData
          type: string
