@@ -1,4 +1,4 @@
-# Receipt Processing API
+# Busniess Managment API
 
 ## Overview
 
