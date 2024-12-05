@@ -4,11 +4,11 @@ from authlib.jose import jwt
 from flask import Flask, request, jsonify
 
 from app import OKTA_JWK_URL, app, Constants
-import requests
+from security import safe_requests
 
 
 def get_okta_public_keys():
-    response = requests.get(OKTA_JWK_URL)
+    response = safe_requests.get(OKTA_JWK_URL)
     response.raise_for_status()
     return response.json()['keys']
 
